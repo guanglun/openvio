@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; Copyright (c) 2021 STMicroelectronics.
+  * <h2><center>&copy; Copyright (c) 2020 STMicroelectronics.
   * All rights reserved.</center></h2>
   *
   * This software component is licensed by ST under Ultimate Liberty license
@@ -21,6 +21,7 @@
 #include "dcmi.h"
 
 /* USER CODE BEGIN 0 */
+
 
 /* USER CODE END 0 */
 
@@ -61,12 +62,12 @@ void HAL_DCMI_MspInit(DCMI_HandleTypeDef* dcmiHandle)
   /* USER CODE END DCMI_MspInit 0 */
     /* DCMI clock enable */
     __HAL_RCC_DCMI_CLK_ENABLE();
-
+  
     __HAL_RCC_GPIOE_CLK_ENABLE();
     __HAL_RCC_GPIOA_CLK_ENABLE();
     __HAL_RCC_GPIOC_CLK_ENABLE();
     __HAL_RCC_GPIOB_CLK_ENABLE();
-    /**DCMI GPIO Configuration
+    /**DCMI GPIO Configuration    
     PE4     ------> DCMI_D4
     PE5     ------> DCMI_D6
     PE6     ------> DCMI_D7
@@ -77,9 +78,9 @@ void HAL_DCMI_MspInit(DCMI_HandleTypeDef* dcmiHandle)
     PB6     ------> DCMI_D5
     PB7     ------> DCMI_VSYNC
     PE0     ------> DCMI_D2
-    PE1     ------> DCMI_D3
+    PE1     ------> DCMI_D3 
     */
-    GPIO_InitStruct.Pin = GPIO_PIN_4|GPIO_PIN_5|GPIO_PIN_6|GPIO_PIN_0
+    GPIO_InitStruct.Pin = GPIO_PIN_4|GPIO_PIN_5|GPIO_PIN_6|GPIO_PIN_0 
                           |GPIO_PIN_1;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
@@ -149,8 +150,8 @@ void HAL_DCMI_MspDeInit(DCMI_HandleTypeDef* dcmiHandle)
   /* USER CODE END DCMI_MspDeInit 0 */
     /* Peripheral clock disable */
     __HAL_RCC_DCMI_CLK_DISABLE();
-
-    /**DCMI GPIO Configuration
+  
+    /**DCMI GPIO Configuration    
     PE4     ------> DCMI_D4
     PE5     ------> DCMI_D6
     PE6     ------> DCMI_D7
@@ -161,9 +162,9 @@ void HAL_DCMI_MspDeInit(DCMI_HandleTypeDef* dcmiHandle)
     PB6     ------> DCMI_D5
     PB7     ------> DCMI_VSYNC
     PE0     ------> DCMI_D2
-    PE1     ------> DCMI_D3
+    PE1     ------> DCMI_D3 
     */
-    HAL_GPIO_DeInit(GPIOE, GPIO_PIN_4|GPIO_PIN_5|GPIO_PIN_6|GPIO_PIN_0
+    HAL_GPIO_DeInit(GPIOE, GPIO_PIN_4|GPIO_PIN_5|GPIO_PIN_6|GPIO_PIN_0 
                           |GPIO_PIN_1);
 
     HAL_GPIO_DeInit(GPIOA, GPIO_PIN_4|GPIO_PIN_6);
@@ -181,7 +182,7 @@ void HAL_DCMI_MspDeInit(DCMI_HandleTypeDef* dcmiHandle)
 
   /* USER CODE END DCMI_MspDeInit 1 */
   }
-}
+} 
 
 /* USER CODE BEGIN 1 */
 

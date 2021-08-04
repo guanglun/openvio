@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; Copyright (c) 2021 STMicroelectronics.
+  * <h2><center>&copy; Copyright (c) 2019 STMicroelectronics.
   * All rights reserved.</center></h2>
   *
   * This software component is licensed by ST under Ultimate Liberty license
@@ -38,11 +38,11 @@
   * @brief For Usb device.
   * @{
   */
-
+  
 /** @defgroup USBD_CDC_IF USBD_CDC_IF
   * @brief Usb VCP device module
   * @{
-  */
+  */ 
 
 /** @defgroup USBD_CDC_IF_Exported_Defines USBD_CDC_IF_Exported_Defines
   * @brief Defines.
@@ -106,7 +106,7 @@ extern USBD_CDC_ItfTypeDef USBD_Interface_fops_HS;
 uint8_t CDC_Transmit_HS(uint8_t* Buf, uint16_t Len);
 
 /* USER CODE BEGIN EXPORTED_FUNCTIONS */
-
+uint8_t MPU_Transmit_HS(uint8_t* Buf, uint16_t Len);
 /* USER CODE END EXPORTED_FUNCTIONS */
 
 /**

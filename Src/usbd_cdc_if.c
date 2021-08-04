@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; Copyright (c) 2021 STMicroelectronics.
+  * <h2><center>&copy; Copyright (c) 2019 STMicroelectronics.
   * All rights reserved.</center></h2>
   *
   * This software component is licensed by ST under Ultimate Liberty license
@@ -294,7 +294,20 @@ uint8_t CDC_Transmit_HS(uint8_t* Buf, uint16_t Len)
 }
 
 /* USER CODE BEGIN PRIVATE_FUNCTIONS_IMPLEMENTATION */
-
+uint8_t MPU_Transmit_HS(uint8_t* Buf, uint16_t Len)
+{
+  uint8_t result = USBD_OK;
+  /* USER CODE BEGIN 12 */
+  USBD_CDC_HandleTypeDef *hcdc = (USBD_CDC_HandleTypeDef*)hUsbDeviceHS.pClassData;
+  if (hcdc->TxState != 0){
+    return USBD_BUSY;
+  }
+  //HAL_GPIO_WritePin(TEST2_GPIO_Port, TEST2_Pin, GPIO_PIN_SET);
+  USBD_CDC_SetTxBuffer(&hUsbDeviceHS, Buf, Len);
+  result = USBD_MPU_TransmitPacket(&hUsbDeviceHS);
+  /* USER CODE END 12 */
+  return result;
+}
 /* USER CODE END PRIVATE_FUNCTIONS_IMPLEMENTATION */
 
 /**

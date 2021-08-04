@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; Copyright (c) 2021 STMicroelectronics.
+  * <h2><center>&copy; Copyright (c) 2019 STMicroelectronics.
   * All rights reserved.</center></h2>
   *
   * This software component is licensed by ST under Ultimate Liberty license
@@ -24,7 +24,7 @@
 #ifndef __SD_DISKIO_H
 #define __SD_DISKIO_H
 
-/* USER CODE BEGIN firstSection */
+/* USER CODE BEGIN firstSection */ 
 /* can be used to modify / undefine following code or add new definitions */
 /* USER CODE END firstSection */
 
@@ -35,7 +35,7 @@
 /* Exported functions ------------------------------------------------------- */
 extern const Diskio_drvTypeDef  SD_Driver;
 
-/* USER CODE BEGIN lastSection */
+/* USER CODE BEGIN lastSection */ 
 /* can be used to modify / undefine previous code or add new definitions */
 /* USER CODE END lastSection */
 

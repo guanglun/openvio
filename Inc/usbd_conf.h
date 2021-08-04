@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; Copyright (c) 2021 STMicroelectronics.
+  * <h2><center>&copy; Copyright (c) 2019 STMicroelectronics.
   * All rights reserved.</center></h2>
   *
   * This software component is licensed by ST under Ultimate Liberty license
@@ -75,6 +75,7 @@
 /*---------- -----------*/
 #define USBD_SELF_POWERED     1U
 
+#define USBD_SUPPORT_WINUSB       1U
 /****************************************/
 /* #define for FS and HS identification */
 #define DEVICE_FS 		0

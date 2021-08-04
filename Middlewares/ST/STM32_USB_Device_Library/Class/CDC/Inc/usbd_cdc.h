@@ -43,7 +43,7 @@ extern "C" {
   */
 #define CDC_IN_EP                                   0x81U  /* EP1 for data IN */
 #define CDC_OUT_EP                                  0x01U  /* EP1 for data OUT */
-#define CDC_CMD_EP                                  0x82U  /* EP2 for CDC commands */
+#define MPU_IN_EP                                   0x82U  /* EP2 for MPU_IN_EP */
 
 #ifndef CDC_HS_BINTERVAL
 #define CDC_HS_BINTERVAL                          0x10U
@@ -57,6 +57,7 @@ extern "C" {
 #define CDC_DATA_HS_MAX_PACKET_SIZE                 512U  /* Endpoint IN & OUT Packet size */
 #define CDC_DATA_FS_MAX_PACKET_SIZE                 64U  /* Endpoint IN & OUT Packet size */
 #define CDC_CMD_PACKET_SIZE                         8U  /* Control Endpoint Packet size */
+#define MPU_DATA_PACKET_SIZE                        12U
 
 #define USB_CDC_CONFIG_DESC_SIZ                     67U
 #define CDC_DATA_HS_IN_PACKET_SIZE                  CDC_DATA_HS_MAX_PACKET_SIZE
@@ -159,6 +160,12 @@ uint8_t  USBD_CDC_SetRxBuffer(USBD_HandleTypeDef   *pdev,
 uint8_t  USBD_CDC_ReceivePacket(USBD_HandleTypeDef *pdev);
 
 uint8_t  USBD_CDC_TransmitPacket(USBD_HandleTypeDef *pdev);
+
+uint8_t  USBD_MPU_TransmitPacket(USBD_HandleTypeDef *pdev);
+
+uint8_t USBD_MPU_SendReport(USBD_HandleTypeDef  *pdev,
+                            uint8_t *report,
+                            uint16_t len);
 /**
   * @}
   */
