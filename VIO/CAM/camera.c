@@ -64,7 +64,8 @@ void camera_timer_init(int fps)
 
 static void DCMI_Start(void)
 {
-    __HAL_DCMI_ENABLE_IT(&hdcmi, DCMI_IT_FRAME | DCMI_IT_LINE);
+    //__HAL_DCMI_ENABLE_IT(&hdcmi, DCMI_IT_FRAME | DCMI_IT_LINE);
+    __HAL_DCMI_ENABLE_IT(&hdcmi, DCMI_IT_FRAME);
     HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_CONTINUOUS, (uint32_t)dcmi_image_buffer, vio_status.cam_frame_size / 4 * vio_status.gs_bpp); //DCMI启动DMA通道
 }
 
@@ -74,6 +75,8 @@ void camera_init(void)
 
     xSemaphore = xSemaphoreCreateBinary();
 
+    HAL_DCMI_Stop(&hdcmi);
+    
     HAL_GPIO_WritePin(DCMI_PWDN_GPIO_Port, DCMI_PWDN_Pin, GPIO_PIN_SET);
     HAL_Delay(10);
     HAL_GPIO_WritePin(DCMI_PWDN_GPIO_Port, DCMI_PWDN_Pin, GPIO_PIN_RESET);
@@ -94,7 +97,7 @@ void camera_init(void)
         cambus_readb(cam_slv_addr, OV_CHIP_ID, &chip_id);
         break;
     case MT9V034_SLV_ADDR:
-        HAL_RCC_MCOConfig(RCC_MCO1, RCC_MCO1SOURCE_PLL1QCLK, RCC_MCODIV_4); //3 32MHZ,4 24MHZ
+        HAL_RCC_MCOConfig(RCC_MCO1, RCC_MCO1SOURCE_PLL1QCLK, RCC_MCODIV_3); //3 32MHZ,4 24MHZ
         cambus_readb(cam_slv_addr, ON_CHIP_ID, &chip_id);
         break;
     default:
@@ -113,7 +116,7 @@ void camera_init(void)
         LCD_ShowString(0, 16 * 3, "[CAM CHIP][OV7725]", RED, WHITE, 16, 0);
         ov7725_init();
 
-        osDelay(1000);
+        HAL_Delay(10);
         LCD_Fill(0, 0, LCD_W, LCD_H, WHITE);
         camera_timer_init(20);
         break;
@@ -126,7 +129,7 @@ void camera_init(void)
         LCD_ShowString(0, 16 * 3, "[CAM CHIP][MT9V034]", RED, WHITE, 16, 0);
         mt9v034_init();
 
-        osDelay(1000);
+        HAL_Delay(10);
         //LCD_Fill(0,0,LCD_W,LCD_H,WHITE);
         //camera_timer_init(30);
         DCMI_Start();
@@ -135,8 +138,6 @@ void camera_init(void)
         LCD_ShowString(0, 16 * 3, "[CAM CHIP][Not Found]", RED, WHITE, 16, 0);
         break;
     }
-
-    
 }
 
 extern QueueHandle_t xQueue;
@@ -255,20 +256,16 @@ void HAL_DCMI_FrameEventCallback(DCMI_HandleTypeDef *hdcmi)
 
 void HAL_DCMI_LineEventCallback(DCMI_HandleTypeDef *hdcmi)
 {
-    HAL_GPIO_WritePin(GPIOD, TEST1_Pin, GPIO_PIN_SET);
-    if(line_cnt < 480)
-    {
-        for(int i=0;i<752;i++)
-        {
-            
-            dcmi_image_buffer[752*line_cnt+i] = dcmi_image_buffer[752*line_cnt+i] > 200 ?255:0;
-        }
-    }else{
-        //printf("error %d\r\n",line_cnt);
-    }
-
-    line_cnt++;
-    HAL_GPIO_WritePin(GPIOD, TEST1_Pin, GPIO_PIN_RESET);
+    //HAL_GPIO_WritePin(GPIOD, TEST1_Pin, GPIO_PIN_SET);
+    // if(line_cnt < 480)
+    // {
+    //     for(int i=0;i<752;i++)
+    //     {
+    //         dcmi_image_buffer[752*line_cnt+i] = dcmi_image_buffer[752*line_cnt+i] > 200 ?255:0;
+    //     }
+    //     line_cnt++;
+    // }
+    //HAL_GPIO_WritePin(GPIOD, TEST1_Pin, GPIO_PIN_RESET);
 }
 
 const int resolution[][2] = {
