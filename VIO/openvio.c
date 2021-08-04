@@ -96,8 +96,8 @@ uint8_t openvio_usb_send(enum SENSOR_USB usb, uint8_t *Buf, uint32_t Len)
     usb_frame_s.addr = (uint8_t *)Buf;
     usb_frame_s.len = Len;
     usb_frame_s.sensor = usb;
-    xQueueSend(xQueue, (void *)&usb_frame_s, (TickType_t)0);
-
+    //xQueueSend(xQueue, (void *)&usb_frame_s, (TickType_t)0);
+    xQueueSendFromISR(xQueue, (void *)&usb_frame_s, (TickType_t)0);
     return 1;
 }
 

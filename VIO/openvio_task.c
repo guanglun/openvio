@@ -107,8 +107,8 @@ uint8_t camera_ctrl(USBD_SetupReqTypedef *req, uint8_t *s_data)
 		}
 		break;
 	case REQUEST_CAMERA_SET_FRAME_SIZE_NUM:
-		//			if(vio_status.cam_status == SENSOR_STATUS_WAIT)
-		//			{
+		//if(vio_status.cam_status == SENSOR_STATUS_WAIT)
+		//{
 		vio_status.cam_status = SENSOR_STATUS_WAIT;
 		//osDelay(1000);
 		if (vio_status.cam_id == OV7725_ID)
@@ -152,15 +152,15 @@ void StartOpenvioTask(void const *argument)
 
 	while (1)
 	{
-		HAL_GPIO_WritePin(LED_R_GPIO_Port, LED_R_Pin, GPIO_PIN_RESET);
-		osDelay(1000);
-		HAL_GPIO_WritePin(LED_R_GPIO_Port, LED_R_Pin, GPIO_PIN_SET);
-		osDelay(1000);
+		// HAL_GPIO_WritePin(LED_R_GPIO_Port, LED_R_Pin, GPIO_PIN_RESET);
+		// osDelay(1000);
+		// HAL_GPIO_WritePin(LED_R_GPIO_Port, LED_R_Pin, GPIO_PIN_SET);
+		// osDelay(1000);
 
-		HAL_GPIO_WritePin(LED_G_GPIO_Port, LED_G_Pin, GPIO_PIN_RESET);
-		osDelay(1000);
-		HAL_GPIO_WritePin(LED_G_GPIO_Port, LED_G_Pin, GPIO_PIN_SET);
-		osDelay(1000);
+		// HAL_GPIO_WritePin(LED_G_GPIO_Port, LED_G_Pin, GPIO_PIN_RESET);
+		// osDelay(1000);
+		// HAL_GPIO_WritePin(LED_G_GPIO_Port, LED_G_Pin, GPIO_PIN_SET);
+		// osDelay(1000);
 
 		HAL_GPIO_WritePin(LED_B_GPIO_Port, LED_B_Pin, GPIO_PIN_RESET);
 		osDelay(1000);

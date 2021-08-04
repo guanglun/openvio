@@ -18,18 +18,17 @@ extern DMA_HandleTypeDef hdma_dcmi;
 DMA_BUFFER uint8_t dcmi_image_buffer[CAM_PACKAGE_MAX_SIZE * 2] = {0};
 
 volatile uint8_t is_send_cam_head = 0;
-TimerHandle_t xTimerCAM; 
+TimerHandle_t xTimerCAM;
 SemaphoreHandle_t xSemaphore;
 
 HAL_StatusTypeDef USER_DCMI_Start_DMA(DCMI_HandleTypeDef *hdcmi, uint32_t DCMI_Mode, uint32_t pData, uint32_t Length);
-
 
 // 定时器回调函数格式
 static void vCAMTimerCallback(TimerHandle_t xTimer)
 {
     //if (vio_status.cam_status == SENSOR_STATUS_START)
     {
-        dcmi_dma_start();
+        //dcmi_dma_start();
     }
 }
 
@@ -61,6 +60,12 @@ void camera_timer_init(int fps)
     {
         printf("[xTimerCAM][FAIL]\r\n");
     }
+}
+
+static void DCMI_Start(void)
+{
+    __HAL_DCMI_ENABLE_IT(&hdcmi, DCMI_IT_FRAME);
+    HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_CONTINUOUS, (uint32_t)dcmi_image_buffer, vio_status.cam_frame_size / 4 * vio_status.gs_bpp); //DCMI启动DMA通道
 }
 
 void camera_init(void)
@@ -103,13 +108,13 @@ void camera_init(void)
     case OV7725_ID:
         vio_status.cam_id = OV7725_ID;
         vio_status.gs_bpp = 2;
-        vio_status.cam_frame_size_num = FRAMESIZE_VGA;//FRAMESIZE_QVGA;//FRAMESIZE_MLCD; //
+        vio_status.cam_frame_size_num = FRAMESIZE_VGA; //FRAMESIZE_QVGA;//FRAMESIZE_MLCD; //
         printf("[CAM CHIP][OV7725]\r\n");
-		LCD_ShowString(0, 16 * 3, "[CAM CHIP][OV7725]", RED, WHITE, 16, 0);
+        LCD_ShowString(0, 16 * 3, "[CAM CHIP][OV7725]", RED, WHITE, 16, 0);
         ov7725_init();
-	
-		osDelay(1000);
-		LCD_Fill(0,0,LCD_W,LCD_H,WHITE);	
+
+        osDelay(1000);
+        LCD_Fill(0, 0, LCD_W, LCD_H, WHITE);
         camera_timer_init(20);
         break;
     case MT9V034_ID:
@@ -118,17 +123,20 @@ void camera_init(void)
         vio_status.gs_bpp = 1;
         vio_status.cam_frame_size_num = FRAMESIZE_WVGA2;
         printf("[CAM CHIP][MT9V034]\r\n");
-		LCD_ShowString(0, 16 * 3, "[CAM CHIP][MT9V034]", RED, WHITE, 16, 0);
+        LCD_ShowString(0, 16 * 3, "[CAM CHIP][MT9V034]", RED, WHITE, 16, 0);
         mt9v034_init();
-	
-		osDelay(1000);
-		LCD_Fill(0,0,LCD_W,LCD_H,WHITE);
-        camera_timer_init(20);
+
+        osDelay(1000);
+        //LCD_Fill(0,0,LCD_W,LCD_H,WHITE);
+        //camera_timer_init(30);
+        DCMI_Start();
         break;
     default:
-		LCD_ShowString(0, 16 * 3, "[CAM CHIP][Not Found]", RED, WHITE, 16, 0);
+        LCD_ShowString(0, 16 * 3, "[CAM CHIP][Not Found]", RED, WHITE, 16, 0);
         break;
     }
+
+    
 }
 
 extern QueueHandle_t xQueue;
@@ -156,12 +164,11 @@ void USER_DCMI_MemDMAXferCplt(uint32_t data, uint32_t size)
         is_send_cam_head = 0;
     }
 }
-
+static uint32_t t1;
+static uint16_t t2;
 uint8_t cam_head[6 + 6] = "CAMERA";
 void dcmi_dma_start(void)
 {
-    static uint32_t t1;
-    static uint16_t t2;
 
     is_send_cam_head = 0;
     if (vio_status.cam_status == SENSOR_STATUS_START)
@@ -188,9 +195,20 @@ void dcmi_dma_start(void)
     {
         //osDelay(1);
     }
+
     HAL_GPIO_WritePin(GPIOD, TEST1_Pin, GPIO_PIN_RESET);
 
     HAL_DCMI_Stop(&hdcmi);
+
+    // for(uint32_t i = 0;i < vio_status.cam_frame_size * vio_status.gs_bpp; i++)
+    // {
+    //     if(dcmi_image_buffer[i] > 200)
+    //     {
+    //         dcmi_image_buffer[i] = 255;
+    //     }else{
+    //         dcmi_image_buffer[i] = 0;
+    //     }
+    // }
 
     if (vio_status.cam_frame_size * vio_status.gs_bpp <= CAM_PACKAGE_MAX_SIZE)
     {
@@ -215,8 +233,21 @@ void dcmi_dma_start(void)
 
 void HAL_DCMI_FrameEventCallback(DCMI_HandleTypeDef *hdcmi)
 {
-    static BaseType_t xHigherPriorityTaskWoken;
-    xSemaphoreGiveFromISR(xSemaphore, &xHigherPriorityTaskWoken);
+    HAL_GPIO_WritePin(GPIOD, TEST1_Pin, GPIO_PIN_SET);
+
+    get_time(&t1, &t2);
+
+    cam_head[6 + 0] = (uint8_t)(t1 >> 24);
+    cam_head[6 + 1] = (uint8_t)(t1 >> 16);
+    cam_head[6 + 2] = (uint8_t)(t1 >> 8);
+    cam_head[6 + 3] = (uint8_t)(t1 >> 0);
+    cam_head[6 + 4] = (uint8_t)(t2 >> 8);
+    cam_head[6 + 5] = (uint8_t)(t2 >> 0);
+
+    openvio_usb_send(SENSOR_USB_CAM, cam_head, 12);
+    openvio_usb_send(SENSOR_USB_CAM, dcmi_image_buffer, vio_status.cam_frame_size * vio_status.gs_bpp);
+
+    HAL_GPIO_WritePin(GPIOD, TEST1_Pin, GPIO_PIN_RESET);
 }
 
 //void HAL_DCMI_VsyncEventCallback(DCMI_HandleTypeDef *hdcmi)
@@ -260,181 +291,181 @@ const int resolution[][2] = {
     {240, 240}, /* LCD      */
 };
 
-static void USER_DCMI_DMAXferCplt(DMA_HandleTypeDef *hdma)
-{
+// static void USER_DCMI_DMAXferCplt(DMA_HandleTypeDef *hdma)
+// {
 
-    uint32_t tmp;
+//     uint32_t tmp;
 
-    DCMI_HandleTypeDef *hdcmi = (DCMI_HandleTypeDef *)((DMA_HandleTypeDef *)hdma)->Parent;
-    //str[cnt++] = '|';
-    if (hdcmi->XferCount != 0U)
-    {
-        /* Update memory 0 address location */
-        tmp = ((((DMA_Stream_TypeDef *)(hdcmi->DMA_Handle->Instance))->CR) & DMA_SxCR_CT);
-        if (((hdcmi->XferCount % 2U) == 0U) && (tmp != 0U))
-        {
-            //str[cnt++] = '1';
-            tmp = ((DMA_Stream_TypeDef *)(hdcmi->DMA_Handle->Instance))->M0AR;
-            USER_DCMI_MemDMAXferCplt(tmp, hdcmi->XferSize * 4);
-            hdcmi->XferCount--;
-        }
-        /* Update memory 1 address location */
-        else if ((((DMA_Stream_TypeDef *)(hdcmi->DMA_Handle->Instance))->CR & DMA_SxCR_CT) == 0U)
-        {
-            //str[cnt++] = '2';
-            tmp = ((DMA_Stream_TypeDef *)(hdcmi->DMA_Handle->Instance))->M1AR;
-            USER_DCMI_MemDMAXferCplt(tmp, hdcmi->XferSize * 4);
-            hdcmi->XferCount--;
-        }
-        else
-        {
-            //str[cnt++] = '3';
-            /* Nothing to do */
-        }
-    }
-    /* Update memory 0 address location */
-    else if ((((DMA_Stream_TypeDef *)(hdcmi->DMA_Handle->Instance))->CR & DMA_SxCR_CT) != 0U)
-    {
-        //str[cnt++] = '4';
-        tmp = ((DMA_Stream_TypeDef *)(hdcmi->DMA_Handle->Instance))->M0AR;
-        USER_DCMI_MemDMAXferCplt((uint32_t)tmp, hdcmi->XferSize * 4);
-        //((DMA_Stream_TypeDef *)(hdcmi->DMA_Handle->Instance))->M0AR = hdcmi->pBuffPtr;
-    }
-    /* Update memory 1 address location */
-    else if ((((DMA_Stream_TypeDef *)(hdcmi->DMA_Handle->Instance))->CR & DMA_SxCR_CT) == 0U)
-    {
-        //str[cnt++] = '5';
-        tmp = ((DMA_Stream_TypeDef *)(hdcmi->DMA_Handle->Instance))->M1AR;
+//     DCMI_HandleTypeDef *hdcmi = (DCMI_HandleTypeDef *)((DMA_HandleTypeDef *)hdma)->Parent;
+//     //str[cnt++] = '|';
+//     if (hdcmi->XferCount != 0U)
+//     {
+//         /* Update memory 0 address location */
+//         tmp = ((((DMA_Stream_TypeDef *)(hdcmi->DMA_Handle->Instance))->CR) & DMA_SxCR_CT);
+//         if (((hdcmi->XferCount % 2U) == 0U) && (tmp != 0U))
+//         {
+//             //str[cnt++] = '1';
+//             tmp = ((DMA_Stream_TypeDef *)(hdcmi->DMA_Handle->Instance))->M0AR;
+//             USER_DCMI_MemDMAXferCplt(tmp, hdcmi->XferSize * 4);
+//             hdcmi->XferCount--;
+//         }
+//         /* Update memory 1 address location */
+//         else if ((((DMA_Stream_TypeDef *)(hdcmi->DMA_Handle->Instance))->CR & DMA_SxCR_CT) == 0U)
+//         {
+//             //str[cnt++] = '2';
+//             tmp = ((DMA_Stream_TypeDef *)(hdcmi->DMA_Handle->Instance))->M1AR;
+//             USER_DCMI_MemDMAXferCplt(tmp, hdcmi->XferSize * 4);
+//             hdcmi->XferCount--;
+//         }
+//         else
+//         {
+//             //str[cnt++] = '3';
+//             /* Nothing to do */
+//         }
+//     }
+//     /* Update memory 0 address location */
+//     else if ((((DMA_Stream_TypeDef *)(hdcmi->DMA_Handle->Instance))->CR & DMA_SxCR_CT) != 0U)
+//     {
+//         //str[cnt++] = '4';
+//         tmp = ((DMA_Stream_TypeDef *)(hdcmi->DMA_Handle->Instance))->M0AR;
+//         USER_DCMI_MemDMAXferCplt((uint32_t)tmp, hdcmi->XferSize * 4);
+//         //((DMA_Stream_TypeDef *)(hdcmi->DMA_Handle->Instance))->M0AR = hdcmi->pBuffPtr;
+//     }
+//     /* Update memory 1 address location */
+//     else if ((((DMA_Stream_TypeDef *)(hdcmi->DMA_Handle->Instance))->CR & DMA_SxCR_CT) == 0U)
+//     {
+//         //str[cnt++] = '5';
+//         tmp = ((DMA_Stream_TypeDef *)(hdcmi->DMA_Handle->Instance))->M1AR;
 
-        USER_DCMI_MemDMAXferCplt((uint32_t)tmp, hdcmi->XferSize * 4);
-        //tmp = hdcmi->pBuffPtr;
-        //((DMA_Stream_TypeDef *)(hdcmi->DMA_Handle->Instance))->M1AR = (tmp + (4U*hdcmi->XferSize));
-        hdcmi->XferCount = hdcmi->XferTransferNumber;
+//         USER_DCMI_MemDMAXferCplt((uint32_t)tmp, hdcmi->XferSize * 4);
+//         //tmp = hdcmi->pBuffPtr;
+//         //((DMA_Stream_TypeDef *)(hdcmi->DMA_Handle->Instance))->M1AR = (tmp + (4U*hdcmi->XferSize));
+//         hdcmi->XferCount = hdcmi->XferTransferNumber;
 
-        //HAL_DCMI_Stop(hdcmi);
-    }
-    else
-    {
-        /* Nothing to do */
-    }
+//         //HAL_DCMI_Stop(hdcmi);
+//     }
+//     else
+//     {
+//         /* Nothing to do */
+//     }
 
-    /* Check if the frame is transferred */
-    if (hdcmi->XferCount == hdcmi->XferTransferNumber)
-    {
-        //   if(((DMA_Stream_TypeDef *)(hdcmi->DMA_Handle->Instance))->M1AR > ((DMA_Stream_TypeDef *)(hdcmi->DMA_Handle->Instance))->M0AR)
-        //   {
-        //       str[cnt++] = '6';
-        //       USER_DCMI_MemDMAXferCplt(((DMA_Stream_TypeDef *)(hdcmi->DMA_Handle->Instance))->M1AR,hdcmi->XferSize*4);
-        //   }
-        //   else
-        //   {
-        //       str[cnt++] = '7';
-        //       USER_DCMI_MemDMAXferCplt(((DMA_Stream_TypeDef *)(hdcmi->DMA_Handle->Instance))->M0AR,hdcmi->XferSize*4);
-        //   }
+//     /* Check if the frame is transferred */
+//     if (hdcmi->XferCount == hdcmi->XferTransferNumber)
+//     {
+//         //   if(((DMA_Stream_TypeDef *)(hdcmi->DMA_Handle->Instance))->M1AR > ((DMA_Stream_TypeDef *)(hdcmi->DMA_Handle->Instance))->M0AR)
+//         //   {
+//         //       str[cnt++] = '6';
+//         //       USER_DCMI_MemDMAXferCplt(((DMA_Stream_TypeDef *)(hdcmi->DMA_Handle->Instance))->M1AR,hdcmi->XferSize*4);
+//         //   }
+//         //   else
+//         //   {
+//         //       str[cnt++] = '7';
+//         //       USER_DCMI_MemDMAXferCplt(((DMA_Stream_TypeDef *)(hdcmi->DMA_Handle->Instance))->M0AR,hdcmi->XferSize*4);
+//         //   }
 
-        //str[cnt++] = '8';
-        /* Enable the Frame interrupt */
-        __HAL_DCMI_ENABLE_IT(hdcmi, DCMI_IT_FRAME);
+//         //str[cnt++] = '8';
+//         /* Enable the Frame interrupt */
+//         __HAL_DCMI_ENABLE_IT(hdcmi, DCMI_IT_FRAME);
 
-        /* When snapshot mode, set dcmi state to ready */
-        if ((hdcmi->Instance->CR & DCMI_CR_CM) == DCMI_MODE_SNAPSHOT)
-        {
-            //str[cnt++] = '9';
-            hdcmi->State = HAL_DCMI_STATE_READY;
-        }
-    }
-}
+//         /* When snapshot mode, set dcmi state to ready */
+//         if ((hdcmi->Instance->CR & DCMI_CR_CM) == DCMI_MODE_SNAPSHOT)
+//         {
+//             //str[cnt++] = '9';
+//             hdcmi->State = HAL_DCMI_STATE_READY;
+//         }
+//     }
+// }
 
-HAL_StatusTypeDef USER_DCMI_Start_DMA(DCMI_HandleTypeDef *hdcmi, uint32_t DCMI_Mode, uint32_t pData, uint32_t Length)
-{
-    /* Initialize the second memory address */
-    uint32_t SecondMemAddress;
+// HAL_StatusTypeDef USER_DCMI_Start_DMA(DCMI_HandleTypeDef *hdcmi, uint32_t DCMI_Mode, uint32_t pData, uint32_t Length)
+// {
+//     /* Initialize the second memory address */
+//     uint32_t SecondMemAddress;
 
-    /* Check function parameters */
-    assert_param(IS_DCMI_CAPTURE_MODE(DCMI_Mode));
+//     /* Check function parameters */
+//     assert_param(IS_DCMI_CAPTURE_MODE(DCMI_Mode));
 
-    /* Process Locked */
-    __HAL_LOCK(hdcmi);
+//     /* Process Locked */
+//     __HAL_LOCK(hdcmi);
 
-    /* Lock the DCMI peripheral state */
-    hdcmi->State = HAL_DCMI_STATE_BUSY;
+//     /* Lock the DCMI peripheral state */
+//     hdcmi->State = HAL_DCMI_STATE_BUSY;
 
-    /* Enable DCMI by setting DCMIEN bit */
-    __HAL_DCMI_ENABLE(hdcmi);
+//     /* Enable DCMI by setting DCMIEN bit */
+//     __HAL_DCMI_ENABLE(hdcmi);
 
-    /* Configure the DCMI Mode */
-    hdcmi->Instance->CR &= ~(DCMI_CR_CM);
-    hdcmi->Instance->CR |= (uint32_t)(DCMI_Mode);
+//     /* Configure the DCMI Mode */
+//     hdcmi->Instance->CR &= ~(DCMI_CR_CM);
+//     hdcmi->Instance->CR |= (uint32_t)(DCMI_Mode);
 
-    /* Set the DMA memory0 conversion complete callback */
-    hdcmi->DMA_Handle->XferCpltCallback = USER_DCMI_DMAXferCplt;
+//     /* Set the DMA memory0 conversion complete callback */
+//     hdcmi->DMA_Handle->XferCpltCallback = USER_DCMI_DMAXferCplt;
 
-    /* Set the DMA error callback */
-    hdcmi->DMA_Handle->XferErrorCallback = NULL;
+//     /* Set the DMA error callback */
+//     hdcmi->DMA_Handle->XferErrorCallback = NULL;
 
-    /* Set the dma abort callback */
-    hdcmi->DMA_Handle->XferAbortCallback = NULL;
+//     /* Set the dma abort callback */
+//     hdcmi->DMA_Handle->XferAbortCallback = NULL;
 
-    /* Reset transfer counters value */
-    hdcmi->XferCount = 0;
-    hdcmi->XferTransferNumber = 0;
-    if (Length <= CAM_PACKAGE_MAX_SIZE / 4)
-    {
-        /* Enable the DMA Stream */
-        if (HAL_DMA_Start_IT(hdcmi->DMA_Handle, (uint32_t)&hdcmi->Instance->DR, (uint32_t)pData, Length) != HAL_OK)
-        {
-            /* Set Error Code */
-            hdcmi->ErrorCode = HAL_DCMI_ERROR_DMA;
-            /* Change DCMI state */
-            hdcmi->State = HAL_DCMI_STATE_READY;
-            /* Release Lock */
-            __HAL_UNLOCK(hdcmi);
-            /* Return function status */
-            return HAL_ERROR;
-        }
-    }
-    else /* DCMI_DOUBLE_BUFFER Mode */
-    {
-        /* Set the DMA memory1 conversion complete callback */
-        hdcmi->DMA_Handle->XferM1CpltCallback = USER_DCMI_DMAXferCplt;
+//     /* Reset transfer counters value */
+//     hdcmi->XferCount = 0;
+//     hdcmi->XferTransferNumber = 0;
+//     if (Length <= CAM_PACKAGE_MAX_SIZE / 4)
+//     {
+//         /* Enable the DMA Stream */
+//         if (HAL_DMA_Start_IT(hdcmi->DMA_Handle, (uint32_t)&hdcmi->Instance->DR, (uint32_t)pData, Length) != HAL_OK)
+//         {
+//             /* Set Error Code */
+//             hdcmi->ErrorCode = HAL_DCMI_ERROR_DMA;
+//             /* Change DCMI state */
+//             hdcmi->State = HAL_DCMI_STATE_READY;
+//             /* Release Lock */
+//             __HAL_UNLOCK(hdcmi);
+//             /* Return function status */
+//             return HAL_ERROR;
+//         }
+//     }
+//     else /* DCMI_DOUBLE_BUFFER Mode */
+//     {
+//         /* Set the DMA memory1 conversion complete callback */
+//         hdcmi->DMA_Handle->XferM1CpltCallback = USER_DCMI_DMAXferCplt;
 
-        /* Initialize transfer parameters */
-        hdcmi->XferCount = 1;
-        hdcmi->XferSize = Length;
-        hdcmi->pBuffPtr = pData;
+//         /* Initialize transfer parameters */
+//         hdcmi->XferCount = 1;
+//         hdcmi->XferSize = Length;
+//         hdcmi->pBuffPtr = pData;
 
-        /* Get the number of buffer */
-        while (hdcmi->XferSize > CAM_PACKAGE_MAX_SIZE / 4)
-        {
-            hdcmi->XferSize = (hdcmi->XferSize / 2U);
-            hdcmi->XferCount = hdcmi->XferCount * 2U;
-        }
-        /* Update DCMI counter  and transfer number*/
-        hdcmi->XferCount = (hdcmi->XferCount - 2U);
-        hdcmi->XferTransferNumber = hdcmi->XferCount;
-        /* Update second memory address */
-        SecondMemAddress = (uint32_t)(pData + (4U * hdcmi->XferSize));
+//         /* Get the number of buffer */
+//         while (hdcmi->XferSize > CAM_PACKAGE_MAX_SIZE / 4)
+//         {
+//             hdcmi->XferSize = (hdcmi->XferSize / 2U);
+//             hdcmi->XferCount = hdcmi->XferCount * 2U;
+//         }
+//         /* Update DCMI counter  and transfer number*/
+//         hdcmi->XferCount = (hdcmi->XferCount - 2U);
+//         hdcmi->XferTransferNumber = hdcmi->XferCount;
+//         /* Update second memory address */
+//         SecondMemAddress = (uint32_t)(pData + (4U * hdcmi->XferSize));
 
-        /* Start DMA multi buffer transfer */
-        if (HAL_DMAEx_MultiBufferStart_IT(hdcmi->DMA_Handle, (uint32_t)&hdcmi->Instance->DR, (uint32_t)pData, SecondMemAddress, hdcmi->XferSize) != HAL_OK)
-        {
-            /* Set Error Code */
-            hdcmi->ErrorCode = HAL_DCMI_ERROR_DMA;
-            /* Change DCMI state */
-            hdcmi->State = HAL_DCMI_STATE_READY;
-            /* Release Lock */
-            __HAL_UNLOCK(hdcmi);
-            /* Return function status */
-            return HAL_ERROR;
-        }
-    }
+//         /* Start DMA multi buffer transfer */
+//         if (HAL_DMAEx_MultiBufferStart_IT(hdcmi->DMA_Handle, (uint32_t)&hdcmi->Instance->DR, (uint32_t)pData, SecondMemAddress, hdcmi->XferSize) != HAL_OK)
+//         {
+//             /* Set Error Code */
+//             hdcmi->ErrorCode = HAL_DCMI_ERROR_DMA;
+//             /* Change DCMI state */
+//             hdcmi->State = HAL_DCMI_STATE_READY;
+//             /* Release Lock */
+//             __HAL_UNLOCK(hdcmi);
+//             /* Return function status */
+//             return HAL_ERROR;
+//         }
+//     }
 
-    /* Enable Capture */
-    hdcmi->Instance->CR |= DCMI_CR_CAPTURE;
+//     /* Enable Capture */
+//     hdcmi->Instance->CR |= DCMI_CR_CAPTURE;
 
-    /* Release Lock */
-    __HAL_UNLOCK(hdcmi);
+//     /* Release Lock */
+//     __HAL_UNLOCK(hdcmi);
 
-    /* Return function status */
-    return HAL_OK;
-}
+//     /* Return function status */
+//     return HAL_OK;
+// }

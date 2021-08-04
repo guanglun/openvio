@@ -208,10 +208,12 @@ void StartDefaultTask(void const *argument)
     {
       if (usb_frame_s.sensor == SENSOR_USB_CAM)
       {
+        HAL_GPIO_WritePin(GPIOD, TEST2_Pin, GPIO_PIN_SET);
         while (CAM_Transmit_HS(usb_frame_s.addr, usb_frame_s.len) != 0)
         {
           osDelay(1);
         }
+        HAL_GPIO_WritePin(GPIOD, TEST2_Pin, GPIO_PIN_RESET);
         if (usb_frame_s.len > 20)
           LCD_Show_Cam(usb_frame_s.addr, usb_frame_s.len);
       }
