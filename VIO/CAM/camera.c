@@ -64,7 +64,7 @@ void camera_timer_init(int fps)
 
 static void DCMI_Start(void)
 {
-    __HAL_DCMI_ENABLE_IT(&hdcmi, DCMI_IT_FRAME);
+    __HAL_DCMI_ENABLE_IT(&hdcmi, DCMI_IT_FRAME | DCMI_IT_LINE);
     HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_CONTINUOUS, (uint32_t)dcmi_image_buffer, vio_status.cam_frame_size / 4 * vio_status.gs_bpp); //DCMI启动DMA通道
 }
 
@@ -231,10 +231,11 @@ void dcmi_dma_start(void)
 
 //}
 
+static line_cnt = 0;
 void HAL_DCMI_FrameEventCallback(DCMI_HandleTypeDef *hdcmi)
 {
+    
     HAL_GPIO_WritePin(GPIOD, TEST1_Pin, GPIO_PIN_SET);
-
     get_time(&t1, &t2);
 
     cam_head[6 + 0] = (uint8_t)(t1 >> 24);
@@ -247,13 +248,28 @@ void HAL_DCMI_FrameEventCallback(DCMI_HandleTypeDef *hdcmi)
     openvio_usb_send(SENSOR_USB_CAM, cam_head, 12);
     openvio_usb_send(SENSOR_USB_CAM, dcmi_image_buffer, vio_status.cam_frame_size * vio_status.gs_bpp);
 
+    line_cnt = 0;
     HAL_GPIO_WritePin(GPIOD, TEST1_Pin, GPIO_PIN_RESET);
 }
 
-//void HAL_DCMI_VsyncEventCallback(DCMI_HandleTypeDef *hdcmi)
-//{
 
-//}
+void HAL_DCMI_LineEventCallback(DCMI_HandleTypeDef *hdcmi)
+{
+    HAL_GPIO_WritePin(GPIOD, TEST1_Pin, GPIO_PIN_SET);
+    if(line_cnt < 480)
+    {
+        for(int i=0;i<752;i++)
+        {
+            
+            dcmi_image_buffer[752*line_cnt+i] = dcmi_image_buffer[752*line_cnt+i] > 200 ?255:0;
+        }
+    }else{
+        //printf("error %d\r\n",line_cnt);
+    }
+
+    line_cnt++;
+    HAL_GPIO_WritePin(GPIOD, TEST1_Pin, GPIO_PIN_RESET);
+}
 
 const int resolution[][2] = {
     {0, 0},

@@ -23,21 +23,29 @@
 /* USER CODE BEGIN 0 */
 #include "stdio.h"
 
+//加入以下代码,支持printf函数,而不需要选择use MicroLIB
+#if 0
 struct __FILE
-{	
-	int handle; 
+{
+	int handle;
 };
-FILE __stdout; 
-  
+FILE __stdout;
+
 void _sys_exit(int x)
-{		
+{
 	x = x;
 }
 
 int fputc(int ch, FILE *f)
 {
-	HAL_UART_Transmit(&huart2, (uint8_t *)&ch, 1, 0xFFFF);	
+	HAL_UART_Transmit(&huart2, (uint8_t *)&ch, 1, 0xFFFF);
 	return ch;
+}
+#endif //重定向代码如下
+int _write(int fd, char *pBuffer, int size)
+{
+  HAL_UART_Transmit(&huart2, (uint8_t *)pBuffer, size, 0xFFFF);
+  return size;
 }
 /* USER CODE END 0 */
 
@@ -75,68 +83,67 @@ void MX_USART2_UART_Init(void)
   {
     Error_Handler();
   }
-
 }
 
-void HAL_UART_MspInit(UART_HandleTypeDef* uartHandle)
+void HAL_UART_MspInit(UART_HandleTypeDef *uartHandle)
 {
 
   GPIO_InitTypeDef GPIO_InitStruct = {0};
-  if(uartHandle->Instance==USART2)
+  if (uartHandle->Instance == USART2)
   {
-  /* USER CODE BEGIN USART2_MspInit 0 */
+    /* USER CODE BEGIN USART2_MspInit 0 */
 
-  /* USER CODE END USART2_MspInit 0 */
+    /* USER CODE END USART2_MspInit 0 */
     /* USART2 clock enable */
     __HAL_RCC_USART2_CLK_ENABLE();
-  
+
     __HAL_RCC_GPIOD_CLK_ENABLE();
     /**USART2 GPIO Configuration    
     PD5     ------> USART2_TX
     PD6     ------> USART2_RX 
     */
-    GPIO_InitStruct.Pin = GPIO_PIN_5|GPIO_PIN_6;
+    GPIO_InitStruct.Pin = GPIO_PIN_5 | GPIO_PIN_6;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     GPIO_InitStruct.Alternate = GPIO_AF7_USART2;
     HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
-  /* USER CODE BEGIN USART2_MspInit 1 */
+    /* USER CODE BEGIN USART2_MspInit 1 */
 
-  /* USER CODE END USART2_MspInit 1 */
+    /* USER CODE END USART2_MspInit 1 */
   }
 }
 
-void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle)
+void HAL_UART_MspDeInit(UART_HandleTypeDef *uartHandle)
 {
 
-  if(uartHandle->Instance==USART2)
+  if (uartHandle->Instance == USART2)
   {
-  /* USER CODE BEGIN USART2_MspDeInit 0 */
+    /* USER CODE BEGIN USART2_MspDeInit 0 */
 
-  /* USER CODE END USART2_MspDeInit 0 */
+    /* USER CODE END USART2_MspDeInit 0 */
     /* Peripheral clock disable */
     __HAL_RCC_USART2_CLK_DISABLE();
-  
+
     /**USART2 GPIO Configuration    
     PD5     ------> USART2_TX
     PD6     ------> USART2_RX 
     */
-    HAL_GPIO_DeInit(GPIOD, GPIO_PIN_5|GPIO_PIN_6);
+    HAL_GPIO_DeInit(GPIOD, GPIO_PIN_5 | GPIO_PIN_6);
 
-  /* USER CODE BEGIN USART2_MspDeInit 1 */
+    /* USER CODE BEGIN USART2_MspDeInit 1 */
 
-  /* USER CODE END USART2_MspDeInit 1 */
+    /* USER CODE END USART2_MspDeInit 1 */
   }
-} 
+}
 
 /* USER CODE BEGIN 1 */
 extern uint8_t rx_buffer[20];
 //void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 //{
 //  /* Prevent unused argument(s) compilation warning */
-//  
+//
 //  /* NOTE : This function should not be modified, when the callback is needed,
 //            the HAL_UART_RxCpltCallback can be implemented in the user file
 //   */
