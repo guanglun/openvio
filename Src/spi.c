@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; Copyright (c) 2020 STMicroelectronics.
+  * <h2><center>&copy; Copyright (c) 2021 STMicroelectronics.
   * All rights reserved.</center></h2>
   *
   * This software component is licensed by ST under Ultimate Liberty license
@@ -71,13 +71,13 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* spiHandle)
   /* USER CODE END SPI2_MspInit 0 */
     /* SPI2 clock enable */
     __HAL_RCC_SPI2_CLK_ENABLE();
-  
+
     __HAL_RCC_GPIOB_CLK_ENABLE();
     __HAL_RCC_GPIOD_CLK_ENABLE();
-    /**SPI2 GPIO Configuration    
+    /**SPI2 GPIO Configuration
     PB14     ------> SPI2_MISO
     PB15     ------> SPI2_MOSI
-    PD3     ------> SPI2_SCK 
+    PD3     ------> SPI2_SCK
     */
     GPIO_InitStruct.Pin = GPIO_PIN_14|GPIO_PIN_15;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
@@ -131,11 +131,11 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* spiHandle)
   /* USER CODE END SPI2_MspDeInit 0 */
     /* Peripheral clock disable */
     __HAL_RCC_SPI2_CLK_DISABLE();
-  
-    /**SPI2 GPIO Configuration    
+
+    /**SPI2 GPIO Configuration
     PB14     ------> SPI2_MISO
     PB15     ------> SPI2_MOSI
-    PD3     ------> SPI2_SCK 
+    PD3     ------> SPI2_SCK
     */
     HAL_GPIO_DeInit(GPIOB, GPIO_PIN_14|GPIO_PIN_15);
 
@@ -150,7 +150,7 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* spiHandle)
 
   /* USER CODE END SPI2_MspDeInit 1 */
   }
-} 
+}
 
 /* USER CODE BEGIN 1 */
 

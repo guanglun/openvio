@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; Copyright (c) 2020 STMicroelectronics.
+  * <h2><center>&copy; Copyright (c) 2021 STMicroelectronics.
   * All rights reserved.</center></h2>
   *
   * This software component is licensed by ST under Ultimate Liberty license
@@ -33,12 +33,12 @@
 /* USER CODE END 1 */
 MDMA_HandleTypeDef hmdma_mdma_channel40_sdmmc1_end_data_0;
 
-/** 
+/**
   * Enable MDMA controller clock
   * Configure MDMA for global transfers
   *   hmdma_mdma_channel40_sdmmc1_end_data_0
   */
-void MX_MDMA_Init(void) 
+void MX_MDMA_Init(void)
 {
 
   /* MDMA controller clock enable */

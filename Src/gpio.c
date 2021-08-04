@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; Copyright (c) 2020 STMicroelectronics.
+  * <h2><center>&copy; Copyright (c) 2021 STMicroelectronics.
   * All rights reserved.</center></h2>
   *
   * This software component is licensed by ST under Ultimate Liberty license
@@ -66,7 +66,7 @@ void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(USB_SWITCH_GPIO_Port, USB_SWITCH_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOD, TEST1_Pin|TEST2_Pin|IMU_SDA_Pin|IMU_SCL_Pin 
+  HAL_GPIO_WritePin(GPIOD, TEST1_Pin|TEST2_Pin|IMU_SDA_Pin|IMU_SCL_Pin
                           |IMU_SPI_CS_Pin|TFT_SPI_CS_Pin|DCMI_PWDN_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
@@ -125,9 +125,9 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
   HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PDPin PDPin PDPin PDPin 
+  /*Configure GPIO pins : PDPin PDPin PDPin PDPin
                            PDPin */
-  GPIO_InitStruct.Pin = IMU_SDA_Pin|IMU_SCL_Pin|IMU_SPI_CS_Pin|TFT_SPI_CS_Pin 
+  GPIO_InitStruct.Pin = IMU_SDA_Pin|IMU_SCL_Pin|IMU_SPI_CS_Pin|TFT_SPI_CS_Pin
                           |DCMI_PWDN_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
