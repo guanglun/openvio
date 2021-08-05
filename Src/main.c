@@ -120,7 +120,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
   HAL_TIM_Base_Start_IT(&htim6);
   HAL_TIM_Base_Start_IT(&htim13);
-  printf("hello openvio\r\n");
+  printf("[ openvio app ]\r\n");
 
   /* USER CODE END 2 */
 
