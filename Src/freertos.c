@@ -38,7 +38,7 @@ uint8_t fps_value;
 extern uint8_t fps_count;
 extern USBD_HandleTypeDef hUsbDeviceHS;
 extern struct OPENVIO_STATUS vio_status;
-extern ADC_HandleTypeDef hadc1;
+//extern ADC_HandleTypeDef hadc1;
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -145,36 +145,36 @@ void MX_FREERTOS_Init(void) {
 }
 
 /* USER CODE BEGIN Header_StartDefaultTask */
-DMA_BUFFER uint16_t ADC_ConvertedValue[10];
-uint16_t Get_Adc(uint32_t ch)
-{
-  ADC_ChannelConfTypeDef ADC1_ChanConf;
+// DMA_BUFFER uint16_t ADC_ConvertedValue[10];
+// uint16_t Get_Adc(uint32_t ch)
+// {
+//   ADC_ChannelConfTypeDef ADC1_ChanConf;
 
-  ADC1_ChanConf.Channel = ch;
-  ADC1_ChanConf.Rank = ADC_REGULAR_RANK_1;
-  ADC1_ChanConf.SamplingTime = ADC_SAMPLETIME_64CYCLES_5;
-  ADC1_ChanConf.SingleDiff = ADC_SINGLE_ENDED;
-  ADC1_ChanConf.OffsetNumber = ADC_OFFSET_NONE;
-  ADC1_ChanConf.Offset = 0;
-  HAL_ADC_ConfigChannel(&hadc1, &ADC1_ChanConf);
+//   ADC1_ChanConf.Channel = ch;
+//   ADC1_ChanConf.Rank = ADC_REGULAR_RANK_1;
+//   ADC1_ChanConf.SamplingTime = ADC_SAMPLETIME_64CYCLES_5;
+//   ADC1_ChanConf.SingleDiff = ADC_SINGLE_ENDED;
+//   ADC1_ChanConf.OffsetNumber = ADC_OFFSET_NONE;
+//   ADC1_ChanConf.Offset = 0;
+//   HAL_ADC_ConfigChannel(&hadc1, &ADC1_ChanConf);
 
-  HAL_ADC_Start(&hadc1);
+//   HAL_ADC_Start(&hadc1);
 
-  HAL_ADC_PollForConversion(&hadc1, 10);
-  return (uint16_t)HAL_ADC_GetValue(&hadc1);
-}
+//   HAL_ADC_PollForConversion(&hadc1, 10);
+//   return (uint16_t)HAL_ADC_GetValue(&hadc1);
+// }
 
-uint16_t Get_Adc_Average(uint32_t ch, uint8_t times)
-{
-  uint32_t temp_val = 0;
-  uint8_t t;
-  for (t = 0; t < times; t++)
-  {
-    temp_val += Get_Adc(ch);
-    HAL_Delay(5);
-  }
-  return temp_val / times;
-}
+// uint16_t Get_Adc_Average(uint32_t ch, uint8_t times)
+// {
+//   uint32_t temp_val = 0;
+//   uint8_t t;
+//   for (t = 0; t < times; t++)
+//   {
+//     temp_val += Get_Adc(ch);
+//     HAL_Delay(5);
+//   }
+//   return temp_val / times;
+// }
 
 QueueHandle_t xQueue;
 struct USB_FRAME_STRUCT usb_frame_s;
@@ -195,7 +195,7 @@ void StartDefaultTask(void const * argument)
   /* USER CODE BEGIN StartDefaultTask */
   /* Infinite loop */
 
-  HAL_ADCEx_Calibration_Start(&hadc1, ADC_CALIB_OFFSET, ADC_SINGLE_ENDED);
+  //HAL_ADCEx_Calibration_Start(&hadc1, ADC_CALIB_OFFSET, ADC_SINGLE_ENDED);
   xQueue = xQueueCreate(200, sizeof(struct USB_FRAME_STRUCT));
   if (xQueue == NULL)
   {
@@ -242,11 +242,11 @@ void StartDefaultTask(void const * argument)
 
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
-void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *AdcHandle)
-{
-  ADC_ConvertedValue[0] = HAL_ADC_GetValue(AdcHandle);
-  printf("%d\t%0.2f\r\n", ADC_ConvertedValue[0], 3.3f * (float)ADC_ConvertedValue[0] / 4096);
-}
+// void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *AdcHandle)
+// {
+//   ADC_ConvertedValue[0] = HAL_ADC_GetValue(AdcHandle);
+//   printf("%d\t%0.2f\r\n", ADC_ConvertedValue[0], 3.3f * (float)ADC_ConvertedValue[0] / 4096);
+// }
 /* USER CODE END Application */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
