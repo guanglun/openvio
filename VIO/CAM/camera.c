@@ -97,7 +97,7 @@ void camera_init(void)
         cambus_readb(cam_slv_addr, OV_CHIP_ID, &chip_id);
         break;
     case MT9V034_SLV_ADDR:
-        HAL_RCC_MCOConfig(RCC_MCO1, RCC_MCO1SOURCE_PLL1QCLK, RCC_MCODIV_5); //3 32MHZ,4 24MHZ
+        HAL_RCC_MCOConfig(RCC_MCO1, RCC_MCO1SOURCE_PLL1QCLK, RCC_MCODIV_3); //3 32MHZ,4 24MHZ
         cambus_readb(cam_slv_addr, ON_CHIP_ID, &chip_id);
         break;
     default:
@@ -115,7 +115,7 @@ void camera_init(void)
         printf("[CAM CHIP][OV7725]\r\n");
         LCD_ShowString(0, 16 * 3, "[CAM CHIP][OV7725]", RED, WHITE, 16, 0);
         ov7725_init();
-
+        
         HAL_Delay(10);
         LCD_Fill(0, 0, LCD_W, LCD_H, WHITE);
         camera_timer_init(20);
@@ -128,7 +128,7 @@ void camera_init(void)
         printf("[CAM CHIP][MT9V034]\r\n");
         LCD_ShowString(0, 16 * 3, "[CAM CHIP][MT9V034]", RED, WHITE, 16, 0);
         mt9v034_init();
-
+        mt9v034_exposure(10000);
         HAL_Delay(10);
         //LCD_Fill(0,0,LCD_W,LCD_H,WHITE);
         //camera_timer_init(30);
@@ -235,8 +235,8 @@ void dcmi_dma_start(void)
 static line_cnt = 0;
 void HAL_DCMI_FrameEventCallback(DCMI_HandleTypeDef *hdcmi)
 {
-    
-    HAL_GPIO_WritePin(GPIOD, TEST1_Pin, GPIO_PIN_SET);
+    HAL_GPIO_TogglePin(GPIOD, TEST2_Pin);
+    //HAL_GPIO_WritePin(GPIOD, TEST1_Pin, GPIO_PIN_SET);
     get_time(&t1, &t2);
 
     cam_head[6 + 0] = (uint8_t)(t1 >> 24);
@@ -250,13 +250,13 @@ void HAL_DCMI_FrameEventCallback(DCMI_HandleTypeDef *hdcmi)
     openvio_usb_send(SENSOR_USB_CAM, dcmi_image_buffer, vio_status.cam_frame_size * vio_status.gs_bpp);
 
     line_cnt = 0;
-    HAL_GPIO_WritePin(GPIOD, TEST1_Pin, GPIO_PIN_RESET);
+    //HAL_GPIO_WritePin(GPIOD, TEST1_Pin, GPIO_PIN_RESET);
 }
 
 
 void HAL_DCMI_LineEventCallback(DCMI_HandleTypeDef *hdcmi)
 {
-    //HAL_GPIO_WritePin(GPIOD, TEST1_Pin, GPIO_PIN_SET);
+    // HAL_GPIO_WritePin(GPIOD, TEST1_Pin, GPIO_PIN_SET);
     // if(line_cnt < 480)
     // {
     //     for(int i=0;i<752;i++)
@@ -265,7 +265,7 @@ void HAL_DCMI_LineEventCallback(DCMI_HandleTypeDef *hdcmi)
     //     }
     //     line_cnt++;
     // }
-    //HAL_GPIO_WritePin(GPIOD, TEST1_Pin, GPIO_PIN_RESET);
+    // HAL_GPIO_WritePin(GPIOD, TEST1_Pin, GPIO_PIN_RESET);
 }
 
 const int resolution[][2] = {
