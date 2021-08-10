@@ -118,7 +118,13 @@ VIO/sd_card.c \
 VIO/CAM/camera.c \
 VIO/CAM/cambus.c \
 VIO/CAM/mt9v034.c \
-VIO/CAM/ov7725.c
+VIO/CAM/ov7725.c \
+iap/iap.c \
+iap/frame_parse.c \
+iap/frame_send.c \
+iap/flash.c \
+iap/uart_parse.c \
+iap/usb_parse.c
 
 # ASM sources
 ASM_SOURCES =  \
@@ -188,7 +194,8 @@ C_INCLUDES =  \
 -IDrivers/CMSIS/Device/ST/STM32H7xx/Include \
 -IDrivers/CMSIS/Include \
 -IVIO \
--IVIO/CAM
+-IVIO/CAM \
+-Iiap
 
 # compile gcc flags
 ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections

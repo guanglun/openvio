@@ -8,7 +8,6 @@
  *
  * SCCB (I2C like) driver.
  */
-#include <stdbool.h>
 #include <stddef.h>
 #include "cambus.h"
 
