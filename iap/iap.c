@@ -12,36 +12,11 @@ int jump_app_count = JUMP_APP_DELAY;
 
 void boot(void)
 {
-    uart_recv_start();
-    uart_receive_struct_init();
-
     usb_receive_struct_init();
-
     flash_eeprom_load();
-    printf("boot count %d\r\n",eeprom.boot_count++);
-    flash_eeprom_save();
 
-    while (jump_app_count--)
-    {
-        uart_parse_loop();
-        usb_parse_loop();
-        HAL_Delay(1);
-    }
-
-    if(isReadUpgrade == 0)
-    {
-        printf("start jump to app ...\r\n");
-
-        if(!iap_jump_to(FLASH_APP_START_ADDRESS))
-        {
-            printf("jump fail, loop\r\n");
-        }
-    }
-
-    printf("loop...\r\n");
     while(1)
     {
-        uart_parse_loop();
         usb_parse_loop();
     }
 }
