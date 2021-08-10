@@ -139,6 +139,11 @@ uint8_t camera_ctrl(USBD_SetupReqTypedef *req, uint8_t *s_data)
 
 void StartOpenvioTask(void const *argument)
 {
+	uint16_t count_1s = 0;
+
+	usb_receive_struct_init();
+
+    flash_eeprom_load();
 
 	openvio_status_init(&vio_status);
 
@@ -162,9 +167,14 @@ void StartOpenvioTask(void const *argument)
 		// HAL_GPIO_WritePin(LED_G_GPIO_Port, LED_G_Pin, GPIO_PIN_SET);
 		// osDelay(1000);
 
-		HAL_GPIO_WritePin(LED_B_GPIO_Port, LED_B_Pin, GPIO_PIN_RESET);
-		osDelay(1000);
-		HAL_GPIO_WritePin(LED_B_GPIO_Port, LED_B_Pin, GPIO_PIN_SET);
-		osDelay(1000);
+		count_1s++;
+		if(count_1s >= 100)
+		{
+			count_1s = 0;
+			HAL_GPIO_TogglePin(LED_B_GPIO_Port, LED_B_Pin);
+		}
+
+		usb_parse_loop();
+		osDelay(10);
 	}
 }
