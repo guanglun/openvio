@@ -67,6 +67,12 @@ void MX_MDMA_Init(void)
     Error_Handler();
   }
 
+  /* Configure post request address and data masks */
+  if (HAL_MDMA_ConfigPostRequestMask(&hmdma_mdma_channel40_sdmmc1_end_data_0, 0, 0) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
 }
 /* USER CODE BEGIN 2 */
 

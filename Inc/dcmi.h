@@ -1,8 +1,8 @@
 /**
   ******************************************************************************
-  * File Name          : DCMI.h
-  * Description        : This file provides code for the configuration
-  *                      of the DCMI instances.
+  * @file    dcmi.h
+  * @brief   This file contains all the function prototypes for
+  *          the dcmi.c file
   ******************************************************************************
   * @attention
   *
@@ -17,10 +17,11 @@
   ******************************************************************************
   */
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __dcmi_H
-#define __dcmi_H
+#ifndef __DCMI_H__
+#define __DCMI_H__
+
 #ifdef __cplusplus
- extern "C" {
+extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
@@ -45,14 +46,7 @@ void dcmi_dma_start(void);
 #ifdef __cplusplus
 }
 #endif
-#endif /*__ dcmi_H */
 
-/**
-  * @}
-  */
-
-/**
-  * @}
-  */
+#endif /* __DCMI_H__ */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
