@@ -39,7 +39,7 @@ void usb_parse_loop(void)
 {
     if(is_usb_recv != 0)
     {
-        usb_printf_frame(&parse_usb.frame_s);
+        //usb_printf_frame(&parse_usb.frame_s);
         if(parse_usb.frame_s.TargetID == LOCAL_ID)
         {
             parse_iap_frame(&parse_usb);

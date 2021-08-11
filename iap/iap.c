@@ -79,89 +79,96 @@ IAP_STATUS parse_iap_frame(PARSE_STRUCT *parse_uart)
         case CMD_GET_VERSION:
             result = IAP_OK;
             break;             
-        case CMD_IAP_BEGIN:
-            memcpy(&temp32, parse_uart->frame_s.frame_data, 4);
-            iap_reset(&iap_s);
-            crc = 0;
-            iap_s.bin_size = temp32;
+        // case CMD_IAP_BEGIN:
+        //     memcpy(&temp32, parse_uart->frame_s.frame_data, 4);
+        //     iap_reset(&iap_s);
+        //     crc = 0;
+        //     iap_s.bin_size = temp32;
 
-            if (flash_erase_app() == FLASH_OK)
-            {
-                result = IAP_OK;
-            }
+        //     if (flash_erase_app() == FLASH_OK)
+        //     {
+        //         result = IAP_OK;
+        //     }
 
-            break;
-        case CMD_IAP_TRANS:
+        //     break;
+        // case CMD_IAP_TRANS:
 
-            if (iap_s.index == parse_uart->frame_s.DataIndex)
-            {
-                // if (parse_uart->frame_s.FrameDataLen % ALIGN != 0 || parse_uart->frame_s.FrameDataLen == 0)
-                // {
-                //     result = IAPERROR_FORM;
-                //     break;
-                // }
+        //     if (iap_s.index == parse_uart->frame_s.DataIndex)
+        //     {
+        //         // if (parse_uart->frame_s.FrameDataLen % ALIGN != 0 || parse_uart->frame_s.FrameDataLen == 0)
+        //         // {
+        //         //     result = IAPERROR_FORM;
+        //         //     break;
+        //         // }
 
-                if (parse_uart->frame_s.DataIndex == 0 && iap_s.write_pos == 0)
-                {
-                    memcpy((uint8_t *)&temp32, parse_uart->frame_s.frame_data, 4);
-                    if ((temp32 & 0x2FFE0000) == 0x20020000)
-                    {
-                        iap_s.is_bin_head_ok = TRUE;
-                    }
-                    else
-                    {
-                        result = IAPERROR_HEAD;
-                        break;
-                    }
-                }
+        //         if (parse_uart->frame_s.DataIndex == 0 && iap_s.write_pos == 0)
+        //         {
+        //             memcpy((uint8_t *)&temp32, parse_uart->frame_s.frame_data, 4);
+        //             if ((temp32 & 0x2FFE0000) == 0x20020000)
+        //             {
+        //                 iap_s.is_bin_head_ok = TRUE;
+        //             }
+        //             else
+        //             {
+        //                 result = IAPERROR_HEAD;
+        //                 break;
+        //             }
+        //         }
 
-                if (flash_write(FLASH_APP_START_ADDRESS + iap_s.write_pos, (uint8_t *)parse_uart->frame_s.frame_data, parse_uart->frame_s.FrameDataLen) != FLASH_OK)
-                {
-                    result = IAPERROR_WRITEFLASH;
-                }else
-                {
+        //         if (flash_write(FLASH_APP_START_ADDRESS + iap_s.write_pos, (uint8_t *)parse_uart->frame_s.frame_data, parse_uart->frame_s.FrameDataLen) != FLASH_OK)
+        //         {
+        //             result = IAPERROR_WRITEFLASH;
+        //         }else
+        //         {
 
-                    iap_s.index++;
-                    iap_s.write_pos += parse_uart->frame_s.FrameDataLen;
+        //             iap_s.index++;
+        //             iap_s.write_pos += parse_uart->frame_s.FrameDataLen;
 
-                    for(int i=0;i<parse_uart->frame_s.FrameDataLen;i++)
-                    {
-                        crc += parse_uart->frame_s.frame_data[i];
-                    }
+        //             for(int i=0;i<parse_uart->frame_s.FrameDataLen;i++)
+        //             {
+        //                 crc += parse_uart->frame_s.frame_data[i];
+        //             }
 
-                    crc = ~crc;
-                    result = IAP_OK;
-                }
+        //             crc = ~crc;
+        //             result = IAP_OK;
+        //         }
 
-            }
-            else
-            {
-                result = IAPERROR_INDEX;
-            }
-            break;
-        case CMD_IAP_VERIFY:
-            if(parse_uart->frame_s.FrameDataLen == 4)
-            {
-                memcpy(&temp32, parse_uart->frame_s.frame_data, 4);
-                //printf("%02X %02X\r\n",crc,temp32);
+        //     }
+        //     else
+        //     {
+        //         result = IAPERROR_INDEX;
+        //     }
+        //     break;
+        // case CMD_IAP_VERIFY:
+        //     if(parse_uart->frame_s.FrameDataLen == 4)
+        //     {
+        //         memcpy(&temp32, parse_uart->frame_s.frame_data, 4);
+        //         //printf("%02X %02X\r\n",crc,temp32);
 
-                if( *(((uint8_t *)&crc) + 0) == parse_uart->frame_s.frame_data[0] &&
-                    *(((uint8_t *)&crc) + 1) == parse_uart->frame_s.frame_data[1] &&
-                    *(((uint8_t *)&crc) + 2) == parse_uart->frame_s.frame_data[2] &&
-                    *(((uint8_t *)&crc) + 3) == parse_uart->frame_s.frame_data[3]
-                )
-                {
-                    result = IAP_OK;
-                }
-            }else{
-                result = IAPERROR_CRC;
-            }
+        //         if( *(((uint8_t *)&crc) + 0) == parse_uart->frame_s.frame_data[0] &&
+        //             *(((uint8_t *)&crc) + 1) == parse_uart->frame_s.frame_data[1] &&
+        //             *(((uint8_t *)&crc) + 2) == parse_uart->frame_s.frame_data[2] &&
+        //             *(((uint8_t *)&crc) + 3) == parse_uart->frame_s.frame_data[3]
+        //         )
+        //         {
+        //             result = IAP_OK;
+        //         }
+        //     }else{
+        //         result = IAPERROR_CRC;
+        //     }
             
-            break;
-        case CMD_IAP_RESET:
-            printf("reboot...\r\n");
+        //     break;
+        // case CMD_IAP_RESET:
+        //     printf("reboot...\r\n");
+        //     NVIC_SystemReset();
+        //     break;
+        case CMD_IAP_REBOOT_TO_BOOTLOADER:
+            printf("reboot to bootloader ...\r\n");
+            eeprom.reboot_to_bootloader = 1;
+            flash_eeprom_save();
+            __set_FAULTMASK(1);
             NVIC_SystemReset();
-            break;
+            break;            
         case CMD_IAP_READY:
             isReadUpgrade = 1;
             jump_app_count = 0;

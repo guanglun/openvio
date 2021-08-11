@@ -21,7 +21,7 @@
 #define CMD_IAP_RESET   0xA4		//系统复位指令
 #define CMD_IAP_ACK     0xA5       //固件下载应答帧
 #define CMD_IAP_READY   0xA6        //固件下载准备
-
+#define CMD_IAP_REBOOT_TO_BOOTLOADER    0xA7
 
 typedef enum {
     IAP_OK				= 0x00 ,
