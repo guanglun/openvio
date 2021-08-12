@@ -22,10 +22,6 @@
 #include "lcd_init.h"
 #include "config.h"
 
-#define VERSION1 0
-#define VERSION2 0
-#define VERSION3 1
-
 extern USBD_HandleTypeDef hUsbDeviceHS;
 extern int frame_count;
 extern int line_cnt;
@@ -57,16 +53,17 @@ int camera_recv(uint8_t cmd, uint8_t *pbuf, uint16_t length)
 	{
 	case REQUEST_SET_REBOOT:
 
-		if(pbuf[0] == 0)
+		if (pbuf[0] == 0)
 		{
 			eeprom.reboot_to_bootloader = 1;
-            flash_eeprom_save();
-            __set_FAULTMASK(1);
-            NVIC_SystemReset();
-		}else if(pbuf[0] == 1)
+			flash_eeprom_save();
+			__set_FAULTMASK(1);
+			NVIC_SystemReset();
+		}
+		else if (pbuf[0] == 1)
 		{
-            __set_FAULTMASK(1);
-            NVIC_SystemReset();
+			__set_FAULTMASK(1);
+			NVIC_SystemReset();
 		}
 		break;
 	case REQUEST_SET_CAMERA_STATUS:
@@ -95,8 +92,10 @@ int camera_recv(uint8_t cmd, uint8_t *pbuf, uint16_t length)
 	case REQUEST_CAMERA_SET_EXPOSURE:
 		if (vio_status.cam_id == MT9V034_ID)
 		{
-			int exposure = (int)((pbuf[0] << 16) | pbuf[1]);
-			mt9v034_exposure(exposure);
+			vio_status.exposure = (int)((pbuf[0] << 24) | (pbuf[1] << 16) | (pbuf[2] << 8) | (pbuf[3] << 0));
+			eeprom.exposure = vio_status.exposure;
+			flash_eeprom_save();
+			mt9v034_exposure(vio_status.exposure);
 		}
 		break;
 	case REQUEST_CAMERA_SET_FRAME_SIZE_NUM:
@@ -139,7 +138,11 @@ int camera_ctrl(uint8_t cmd, uint8_t *pbuf)
 		pbuf[2] = vio_status.cam_frame_size_num;
 		pbuf[3] = vio_status.gs_bpp;
 		pbuf[4] = vio_status.pixformat;
-		ret = 5;
+		pbuf[5] = (uint8_t)(vio_status.exposure >> 24);
+		pbuf[6] = (uint8_t)(vio_status.exposure >> 16);
+		pbuf[7] = (uint8_t)(vio_status.exposure >> 8);
+		pbuf[8] = (uint8_t)(vio_status.exposure >> 0);
+		ret = 9;
 		break;
 	default:
 		ret = -1;

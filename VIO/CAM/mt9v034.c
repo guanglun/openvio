@@ -153,7 +153,7 @@ int IM_MIN(int a, int b)
 }
 
 #define MICROSECOND_CLKS (1000000)
-#define MT9V034_XCLK_FREQ 27000000
+#define MT9V034_XCLK_FREQ 24000000
 
 static int set_auto_exposure(int enable, int exposure_us)
 {

@@ -11,6 +11,9 @@
 #include "cambus.h"
 #include "lcd.h"
 #include "lcd_init.h"
+#include "config.h"
+
+extern struct EEPROM_CONFIG_STRUCT eeprom;
 
 extern DCMI_HandleTypeDef hdcmi;
 extern DMA_HandleTypeDef hdma_dcmi;
@@ -128,7 +131,10 @@ void camera_init(void)
         printf("[CAM CHIP][MT9V034]\r\n");
         LCD_ShowString(0, 16 * 3, "[CAM CHIP][MT9V034]", RED, WHITE, 16, 0);
         mt9v034_init();
-        mt9v034_exposure(5000);
+
+        //printf("eeprom.exposure %d\r\n",eeprom.exposure);
+        vio_status.exposure = eeprom.exposure;
+        mt9v034_exposure(eeprom.exposure);
         HAL_Delay(10);
         //LCD_Fill(0,0,LCD_W,LCD_H,WHITE);
         //camera_timer_init(30);

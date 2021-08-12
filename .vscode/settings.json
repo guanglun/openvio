@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "*.json": "jsonc",
+        "type_traits": "c",
+        "config.h": "c"
+    }
+}

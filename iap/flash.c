@@ -160,6 +160,8 @@ void flash_eeprom_save(void)
   }
 
   HAL_FLASH_Lock();
+
+  //printf("flash save success\r\n");
 }
 
 void flash_eeprom_load(void)

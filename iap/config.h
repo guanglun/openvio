@@ -7,6 +7,10 @@ extern "C" {
 
 #include "main.h"
 
+#define VERSION1 0
+#define VERSION2 0
+#define VERSION3 2
+
 #define JUMP_APP_DELAY  1000
 
 #define FLASH_BOOTLOADER_START_SECTOR           FLASH_SECTOR_0
@@ -24,8 +28,8 @@ extern "C" {
 
 
 struct EEPROM_CONFIG_STRUCT{
-  uint32_t boot_count;
   uint32_t reboot_to_bootloader;
+  int32_t exposure;
 }__attribute__ ((aligned (4)));;
 
 

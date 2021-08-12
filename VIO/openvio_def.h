@@ -79,6 +79,7 @@ struct OPENVIO_STATUS{
     framesize_t cam_frame_size_num;
     uint32_t cam_frame_size;
     uint8_t cam_name;
+    int exposure;
 };
 
 
