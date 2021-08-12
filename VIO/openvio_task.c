@@ -29,46 +29,30 @@ DMA_BUFFER uint8_t mpu6000_data[14];
 
 struct OPENVIO_STATUS vio_status;
 
-#define REQUEST_CAMERA_START 0xA0
-#define REQUEST_CAMERA_STOP 0xA1
+//OUT
+#define REQUEST_SET_CAMERA_STATUS 0xA0
+
+//IN
+#define REQUEST_GET_CAMERA_STATUS 0x10
+
 #define REQUEST_CAMERA_SET_FRAME_SIZE_NUM 0xA2
 #define REQUEST_CAMERA_SET_EXPOSURE 0xA3
 
 #define REQUEST_IMU_START 0xB0
 #define REQUEST_IMU_STOP 0xB1
 
-uint8_t camera_ctrl(USBD_SetupReqTypedef *req, uint8_t *s_data)
+int camera_recv(uint8_t cmd, uint8_t *pbuf, uint16_t length)
 {
-	uint8_t s_len = 1;
-	s_data[0] = 'F';
-	switch (req->bRequest)
+	int ret = 0;
+	switch (cmd)
 	{
-	case REQUEST_CAMERA_START:
-		if (vio_status.cam_status == SENSOR_STATUS_WAIT)
+	case REQUEST_SET_CAMERA_STATUS:
+		if (vio_status.cam_status == SENSOR_STATUS_WAIT && pbuf[0] == 1)
 		{
-			s_data[0] = 'S';
-			s_data[1] = vio_status.cam_id;
-			s_data[2] = vio_status.cam_frame_size_num;
-			s_data[3] = vio_status.gs_bpp;
-			s_data[4] = vio_status.pixformat;
-			s_len = 5;
 			vio_status.cam_status = SENSOR_STATUS_START;
-		}
-		else
+		}else if (vio_status.cam_status != SENSOR_STATUS_WAIT && pbuf[0] == 0)
 		{
-			s_data[0] = 'F';
-		}
-
-		break;
-	case REQUEST_CAMERA_STOP:
-		if (vio_status.cam_status != SENSOR_STATUS_WAIT)
-		{
-			s_data[0] = 'S';
 			vio_status.cam_status = SENSOR_STATUS_WAIT;
-		}
-		else
-		{
-			s_data[0] = 'F';
 		}
 
 		break;
@@ -76,65 +60,62 @@ uint8_t camera_ctrl(USBD_SetupReqTypedef *req, uint8_t *s_data)
 		if (vio_status.imu_status == SENSOR_STATUS_WAIT)
 		{
 			vio_status.imu_status = SENSOR_STATUS_START;
-			s_data[0] = 'S';
-		}
-		else
-		{
-			s_data[0] = 'F';
 		}
 		break;
 	case REQUEST_IMU_STOP:
 		if (vio_status.imu_status != SENSOR_STATUS_WAIT)
 		{
 			vio_status.imu_status = SENSOR_STATUS_WAIT;
-			s_data[0] = 'S';
-		}
-		else
-		{
-			s_data[0] = 'F';
 		}
 		break;
 	case REQUEST_CAMERA_SET_EXPOSURE:
-		if (vio_status.cam_id == OV7725_ID)
+		if (vio_status.cam_id == MT9V034_ID)
 		{
-			s_data[0] = 'F';
-		}
-		else if (vio_status.cam_id == MT9V034_ID)
-		{
-			int exposure = (int)((req->wValue<<16)|(req->wIndex));
+			int exposure = (int)((pbuf[0] << 16) | pbuf[1]);
 			mt9v034_exposure(exposure);
-			s_data[0] = 'S';
 		}
 		break;
 	case REQUEST_CAMERA_SET_FRAME_SIZE_NUM:
-		//if(vio_status.cam_status == SENSOR_STATUS_WAIT)
-		//{
+
 		vio_status.cam_status = SENSOR_STATUS_WAIT;
-		//osDelay(1000);
+
+		uint16_t size_num = (uint16_t)((pbuf[0] << 16) | pbuf[1]);
+
 		if (vio_status.cam_id == OV7725_ID)
 		{
-			ov7725_config((framesize_t)req->wValue);
+			ov7725_config((framesize_t)size_num);
 		}
 		else if (vio_status.cam_id == MT9V034_ID)
 		{
-			mt9v034_config((framesize_t)req->wValue);
+			mt9v034_config((framesize_t)size_num);
 		}
-
-		s_data[0] = 'S';
-		s_data[1] = vio_status.cam_id;
-		s_data[2] = vio_status.cam_frame_size_num;
-		s_data[3] = vio_status.gs_bpp;
-		s_data[4] = vio_status.pixformat;
-		s_len = 5;
-		//			}else{
-		//				s_data[0] = 'F';
-		//			}
 
 		break;
 	default:
+		ret = -1;
 		break;
 	}
-	return s_len;
+	return ret;
+}
+
+int camera_ctrl(uint8_t cmd, uint8_t *pbuf)
+{
+	int ret = 0;
+	switch (cmd)
+	{
+	case REQUEST_GET_CAMERA_STATUS:
+		pbuf[0] = vio_status.cam_status;
+		pbuf[1] = vio_status.cam_id;
+		pbuf[2] = vio_status.cam_frame_size_num;
+		pbuf[3] = vio_status.gs_bpp;
+		pbuf[4] = vio_status.pixformat;
+		ret = 5;
+		break;
+	default:
+		ret = -1;
+		break;
+	}
+	return ret;
 }
 
 void StartOpenvioTask(void const *argument)
@@ -143,7 +124,7 @@ void StartOpenvioTask(void const *argument)
 
 	usb_receive_struct_init();
 
-    flash_eeprom_load();
+	flash_eeprom_load();
 
 	openvio_status_init(&vio_status);
 
@@ -168,7 +149,7 @@ void StartOpenvioTask(void const *argument)
 		// osDelay(1000);
 
 		count_1s++;
-		if(count_1s >= 100)
+		if (count_1s >= 100)
 		{
 			count_1s = 0;
 			HAL_GPIO_TogglePin(LED_B_GPIO_Port, LED_B_Pin);

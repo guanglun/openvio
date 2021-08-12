@@ -4,7 +4,8 @@
 #include "usbd_def.h"
 
 void StartOpenvioTask(void const * argument);
-uint8_t camera_ctrl(USBD_SetupReqTypedef *req,uint8_t *s_data);
+int camera_ctrl(uint8_t cmd, uint8_t* pbuf);
+int camera_recv(uint8_t cmd, uint8_t* pbuf, uint16_t length);
 
 #endif
 
