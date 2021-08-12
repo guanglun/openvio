@@ -20,6 +20,11 @@
 #include "sd_card.h"
 
 #include "lcd_init.h"
+#include "config.h"
+
+#define VERSION1 0
+#define VERSION2 0
+#define VERSION3 1
 
 extern USBD_HandleTypeDef hUsbDeviceHS;
 extern int frame_count;
@@ -31,9 +36,11 @@ struct OPENVIO_STATUS vio_status;
 
 //OUT
 #define REQUEST_SET_CAMERA_STATUS 0xA0
+#define REQUEST_SET_REBOOT 0x01
 
 //IN
 #define REQUEST_GET_CAMERA_STATUS 0x10
+#define REQUEST_GET_VERSION 0x00
 
 #define REQUEST_CAMERA_SET_FRAME_SIZE_NUM 0xA2
 #define REQUEST_CAMERA_SET_EXPOSURE 0xA3
@@ -41,16 +48,33 @@ struct OPENVIO_STATUS vio_status;
 #define REQUEST_IMU_START 0xB0
 #define REQUEST_IMU_STOP 0xB1
 
+extern struct EEPROM_CONFIG_STRUCT eeprom;
+
 int camera_recv(uint8_t cmd, uint8_t *pbuf, uint16_t length)
 {
 	int ret = 0;
 	switch (cmd)
 	{
+	case REQUEST_SET_REBOOT:
+
+		if(pbuf[0] == 0)
+		{
+			eeprom.reboot_to_bootloader = 1;
+            flash_eeprom_save();
+            __set_FAULTMASK(1);
+            NVIC_SystemReset();
+		}else if(pbuf[0] == 1)
+		{
+            __set_FAULTMASK(1);
+            NVIC_SystemReset();
+		}
+		break;
 	case REQUEST_SET_CAMERA_STATUS:
 		if (vio_status.cam_status == SENSOR_STATUS_WAIT && pbuf[0] == 1)
 		{
 			vio_status.cam_status = SENSOR_STATUS_START;
-		}else if (vio_status.cam_status != SENSOR_STATUS_WAIT && pbuf[0] == 0)
+		}
+		else if (vio_status.cam_status != SENSOR_STATUS_WAIT && pbuf[0] == 0)
 		{
 			vio_status.cam_status = SENSOR_STATUS_WAIT;
 		}
@@ -103,6 +127,12 @@ int camera_ctrl(uint8_t cmd, uint8_t *pbuf)
 	int ret = 0;
 	switch (cmd)
 	{
+	case REQUEST_GET_VERSION:
+		pbuf[0] = VERSION1;
+		pbuf[1] = VERSION2;
+		pbuf[2] = VERSION3;
+		ret = 3;
+		break;
 	case REQUEST_GET_CAMERA_STATUS:
 		pbuf[0] = vio_status.cam_status;
 		pbuf[1] = vio_status.cam_id;

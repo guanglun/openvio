@@ -492,6 +492,7 @@ static uint8_t USBD_CDC_Setup(USBD_HandleTypeDef *pdev,
     {
       if (req->bmRequest & 0x80U)
       {
+
         s_len = camera_ctrl(req->bRequest, s_data);
         if(s_len >= 0)
         {
