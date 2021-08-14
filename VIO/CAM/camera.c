@@ -107,7 +107,7 @@ void camera_init(void)
         cambus_readb(cam_slv_addr, OV_CHIP_ID, &chip_id);
         break;
     case MT9V034_SLV_ADDR:
-        HAL_RCC_MCOConfig(RCC_MCO1, RCC_MCO1SOURCE_PLL1QCLK, RCC_MCODIV_5); //24MHz
+        HAL_RCC_MCOConfig(RCC_MCO1, RCC_MCO1SOURCE_PLL1QCLK, RCC_MCODIV_5);
         cambus_readb(cam_slv_addr, ON_CHIP_ID, &chip_id);
         break;
     default:
@@ -142,10 +142,14 @@ void camera_init(void)
         //printf("eeprom.exposure %d\r\n",eeprom.exposure);
         vio_status.exposure = eeprom.exposure;
         mt9v034_exposure(eeprom.exposure);
+        vio_status.is_sync_mode = eeprom.is_sync_mode;
+        set_triggered_mode(vio_status.is_sync_mode);
+        vio_status.camera_fps = eeprom.camera_fps;
+        USER_MX_TIM6_Init(eeprom.camera_fps);
         //HAL_Delay(10);
         //LCD_Fill(0,0,LCD_W,LCD_H,WHITE);
         //camera_timer_init(30);
-        camera_stop();
+        //camera_start();
         break;
     default:
         LCD_ShowString(0, 16 * 3, "[CAM CHIP][Not Found]", RED, WHITE, 16, 0);
@@ -181,13 +185,17 @@ void USER_DCMI_MemDMAXferCplt(uint32_t data, uint32_t size)
 static uint32_t t1;
 static uint16_t t2;
 uint8_t cam_head[6 + 6] = "CAMERA";
-void dcmi_dma_start(void)
+
+
+static line_cnt = 0;
+void HAL_DCMI_FrameEventCallback(DCMI_HandleTypeDef *hdcmi)
 {
+    HAL_GPIO_TogglePin(GPIOD, TEST1_Pin);
+    HAL_GPIO_WritePin(DCMI_FSYNC_GPIO_Port, DCMI_FSYNC_Pin, GPIO_PIN_RESET);
+    //HAL_GPIO_WritePin(GPIOD, TEST1_Pin, GPIO_PIN_SET);
 
-    is_send_cam_head = 0;
-    if (vio_status.cam_status == SENSOR_STATUS_START)
+    if(vio_status.cam_status != SENSOR_STATUS_WAIT)
     {
-
         get_time(&t1, &t2);
 
         cam_head[6 + 0] = (uint8_t)(t1 >> 24);
@@ -198,71 +206,11 @@ void dcmi_dma_start(void)
         cam_head[6 + 5] = (uint8_t)(t2 >> 0);
 
         openvio_usb_send(SENSOR_USB_CAM, cam_head, 12);
+        openvio_usb_send(SENSOR_USB_CAM, dcmi_image_buffer, vio_status.cam_frame_size * vio_status.gs_bpp);
 
-        is_send_cam_head = 1;
+        line_cnt = 0;
     }
 
-    HAL_GPIO_WritePin(GPIOD, TEST1_Pin, GPIO_PIN_SET);
-    USER_DCMI_Start_DMA(&hdcmi, DCMI_MODE_SNAPSHOT, (uint32_t)dcmi_image_buffer, vio_status.cam_frame_size / 4 * vio_status.gs_bpp);
-
-    while (xSemaphoreTake(xSemaphore, 0xFFFFFFFF) != pdTRUE)
-    {
-        //osDelay(1);
-    }
-
-    HAL_GPIO_WritePin(GPIOD, TEST1_Pin, GPIO_PIN_RESET);
-
-    HAL_DCMI_Stop(&hdcmi);
-
-    // for(uint32_t i = 0;i < vio_status.cam_frame_size * vio_status.gs_bpp; i++)
-    // {
-    //     if(dcmi_image_buffer[i] > 200)
-    //     {
-    //         dcmi_image_buffer[i] = 255;
-    //     }else{
-    //         dcmi_image_buffer[i] = 0;
-    //     }
-    // }
-
-    if (vio_status.cam_frame_size * vio_status.gs_bpp <= CAM_PACKAGE_MAX_SIZE)
-    {
-
-        if ((vio_status.cam_status == SENSOR_STATUS_START) && (is_send_cam_head == 1))
-        {
-
-            openvio_usb_send(SENSOR_USB_CAM, dcmi_image_buffer, vio_status.cam_frame_size * vio_status.gs_bpp);
-        }
-        else
-        {
-            LCD_Show_Cam(dcmi_image_buffer, vio_status.cam_frame_size * vio_status.gs_bpp);
-            is_send_cam_head = 0;
-        }
-    }
-}
-
-//void HAL_DCMI_LineEventCallback(DCMI_HandleTypeDef *hdcmi)
-//{
-
-//}
-
-static line_cnt = 0;
-void HAL_DCMI_FrameEventCallback(DCMI_HandleTypeDef *hdcmi)
-{
-    HAL_GPIO_TogglePin(GPIOD, TEST2_Pin);
-    //HAL_GPIO_WritePin(GPIOD, TEST1_Pin, GPIO_PIN_SET);
-    get_time(&t1, &t2);
-
-    cam_head[6 + 0] = (uint8_t)(t1 >> 24);
-    cam_head[6 + 1] = (uint8_t)(t1 >> 16);
-    cam_head[6 + 2] = (uint8_t)(t1 >> 8);
-    cam_head[6 + 3] = (uint8_t)(t1 >> 0);
-    cam_head[6 + 4] = (uint8_t)(t2 >> 8);
-    cam_head[6 + 5] = (uint8_t)(t2 >> 0);
-
-    openvio_usb_send(SENSOR_USB_CAM, cam_head, 12);
-    openvio_usb_send(SENSOR_USB_CAM, dcmi_image_buffer, vio_status.cam_frame_size * vio_status.gs_bpp);
-
-    line_cnt = 0;
     //HAL_GPIO_WritePin(GPIOD, TEST1_Pin, GPIO_PIN_RESET);
 }
 
