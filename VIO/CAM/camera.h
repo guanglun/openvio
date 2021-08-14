@@ -66,5 +66,7 @@ extern const int resolution[][2];
 
 void camera_init(void);
 void dcmi_dma_start(void);
+void camera_start(void);
+void camera_stop(void);
 
 #endif

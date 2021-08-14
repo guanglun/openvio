@@ -70,10 +70,12 @@ int camera_recv(uint8_t cmd, uint8_t *pbuf, uint16_t length)
 		if (vio_status.cam_status == SENSOR_STATUS_WAIT && pbuf[0] == 1)
 		{
 			vio_status.cam_status = SENSOR_STATUS_START;
+            camera_start();
 		}
 		else if (vio_status.cam_status != SENSOR_STATUS_WAIT && pbuf[0] == 0)
 		{
 			vio_status.cam_status = SENSOR_STATUS_WAIT;
+            camera_stop();
 		}
 
 		break;

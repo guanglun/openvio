@@ -9,7 +9,7 @@ extern "C" {
 
 #define VERSION1 0
 #define VERSION2 0
-#define VERSION3 2
+#define VERSION3 3
 
 #define JUMP_APP_DELAY  1000
 

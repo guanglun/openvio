@@ -65,12 +65,19 @@ void camera_timer_init(int fps)
     }
 }
 
-static void DCMI_Start(void)
+void camera_start(void)
 {
     //__HAL_DCMI_ENABLE_IT(&hdcmi, DCMI_IT_FRAME | DCMI_IT_LINE);
     __HAL_DCMI_ENABLE_IT(&hdcmi, DCMI_IT_FRAME);
     HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_CONTINUOUS, (uint32_t)dcmi_image_buffer, vio_status.cam_frame_size / 4 * vio_status.gs_bpp); //DCMI启动DMA通道
 }
+
+void camera_stop(void)
+{
+    __HAL_DCMI_DISABLE_IT(&hdcmi, DCMI_IT_FRAME);
+    HAL_DCMI_Stop(&hdcmi);
+}
+
 
 void camera_init(void)
 {
@@ -135,10 +142,10 @@ void camera_init(void)
         //printf("eeprom.exposure %d\r\n",eeprom.exposure);
         vio_status.exposure = eeprom.exposure;
         mt9v034_exposure(eeprom.exposure);
-        HAL_Delay(10);
+        //HAL_Delay(10);
         //LCD_Fill(0,0,LCD_W,LCD_H,WHITE);
         //camera_timer_init(30);
-        DCMI_Start();
+        camera_stop();
         break;
     default:
         LCD_ShowString(0, 16 * 3, "[CAM CHIP][Not Found]", RED, WHITE, 16, 0);
