@@ -193,6 +193,7 @@ void StartDefaultTask(void const * argument)
   /* init code for USB_DEVICE */
   MX_USB_DEVICE_Init();
   /* USER CODE BEGIN StartDefaultTask */
+  int try_count = 10;
   /* Infinite loop */
 
   //HAL_ADCEx_Calibration_Start(&hadc1, ADC_CALIB_OFFSET, ADC_SINGLE_ENDED);
@@ -208,8 +209,6 @@ void StartDefaultTask(void const * argument)
     {
       if (usb_frame_s.sensor == SENSOR_USB_CAM)
       {
-        //HAL_GPIO_WritePin(GPIOD, TEST2_Pin, GPIO_PIN_SET);
-
         while (CAM_Transmit_HS(usb_frame_s.addr, usb_frame_s.len) != 0)
         {
           osDelay(1);

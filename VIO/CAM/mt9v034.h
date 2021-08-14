@@ -207,5 +207,6 @@ uint8_t mt9v034_WriteReg(uint16_t Addr, uint8_t Data);
 int mt9v034_init(void);
 void mt9v034_config(framesize_t frame_size_num);
 void mt9v034_exposure(int exposure);
+void set_triggered_mode(int enable);
 
 #endif /* MT9V34_H_ */

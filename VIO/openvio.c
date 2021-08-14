@@ -90,13 +90,14 @@ void USER_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 }
 
 extern QueueHandle_t xQueue;
+
 uint8_t openvio_usb_send(enum SENSOR_USB usb, uint8_t *Buf, uint32_t Len)
 {
     struct USB_FRAME_STRUCT usb_frame_s;
     usb_frame_s.addr = (uint8_t *)Buf;
     usb_frame_s.len = Len;
     usb_frame_s.sensor = usb;
-    //xQueueSend(xQueue, (void *)&usb_frame_s, (TickType_t)0);
+
     xQueueSendFromISR(xQueue, (void *)&usb_frame_s, (TickType_t)0);
     return 1;
 }
@@ -165,7 +166,6 @@ uint8_t CAM_Transmit_HS(uint8_t *Buf, uint32_t Len)
     {
         return USBD_BUSY;
     }
-    //HAL_GPIO_WritePin(TEST1_GPIO_Port, TEST1_Pin, GPIO_PIN_SET);
     USBD_CAM_SetTxBuffer(&hUsbDeviceHS, Buf, Len);
     result = USBD_CAM_TransmitPacket(&hUsbDeviceHS);
     /* USER CODE END 12 */

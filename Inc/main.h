@@ -85,14 +85,17 @@ void get_time(uint32_t *t1_cnt,uint16_t *t2_cnt);
 #define USB_SWITCH_GPIO_Port GPIOE
 #define TEST1_Pin GPIO_PIN_8
 #define TEST1_GPIO_Port GPIOD
-#define TEST2_Pin GPIO_PIN_9
-#define TEST2_GPIO_Port GPIOD
+#define CAMSYNC_Pin GPIO_PIN_9
+#define CAMSYNC_GPIO_Port GPIOD
+#define CAMSYNC_EXTI_IRQn EXTI9_5_IRQn
 #define IMU_SDA_Pin GPIO_PIN_10
 #define IMU_SDA_GPIO_Port GPIOD
 #define IMU_SCL_Pin GPIO_PIN_11
 #define IMU_SCL_GPIO_Port GPIOD
 #define DCMI_RST_Pin GPIO_PIN_10
 #define DCMI_RST_GPIO_Port GPIOA
+#define SYNC_CLOCK_Pin GPIO_PIN_13
+#define SYNC_CLOCK_GPIO_Port GPIOA
 #define SD_CD_Pin GPIO_PIN_0
 #define SD_CD_GPIO_Port GPIOD
 #define IMU_SPI_CS_Pin GPIO_PIN_1
@@ -101,6 +104,8 @@ void get_time(uint32_t *t1_cnt,uint16_t *t2_cnt);
 #define TFT_SPI_CS_GPIO_Port GPIOD
 #define DCMI_PWDN_Pin GPIO_PIN_7
 #define DCMI_PWDN_GPIO_Port GPIOD
+#define DCMI_FSYNC_Pin GPIO_PIN_4
+#define DCMI_FSYNC_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */

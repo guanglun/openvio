@@ -22,9 +22,11 @@
 #include "lcd_init.h"
 #include "config.h"
 
+extern TIM_HandleTypeDef htim6;
 extern USBD_HandleTypeDef hUsbDeviceHS;
 extern int frame_count;
 extern int line_cnt;
+extern QueueHandle_t xQueue;
 
 DMA_BUFFER uint8_t mpu6000_data[14];
 
@@ -38,17 +40,22 @@ struct OPENVIO_STATUS vio_status;
 #define REQUEST_GET_CAMERA_STATUS 0x10
 #define REQUEST_GET_VERSION 0x00
 
-#define REQUEST_CAMERA_SET_FRAME_SIZE_NUM 0xA2
-#define REQUEST_CAMERA_SET_EXPOSURE 0xA3
+#define REQUEST_CAMERA_SET_FRAME_SIZE_NUM   0xA2
+#define REQUEST_CAMERA_SET_EXPOSURE         0xA3
+#define REQUEST_CAMERA_SET_SYNC_STATUS 	    0xA4
+#define REQUEST_CAMERA_SET_SYNC_MODE 	    0xA5
+#define REQUEST_CAMERA_SET_FPS              0xA6
 
 #define REQUEST_IMU_START 0xB0
 #define REQUEST_IMU_STOP 0xB1
 
 extern struct EEPROM_CONFIG_STRUCT eeprom;
 
+
 int camera_recv(uint8_t cmd, uint8_t *pbuf, uint16_t length)
 {
 	int ret = 0;
+
 	switch (cmd)
 	{
 	case REQUEST_SET_REBOOT:
@@ -71,6 +78,7 @@ int camera_recv(uint8_t cmd, uint8_t *pbuf, uint16_t length)
 		{
 			vio_status.cam_status = SENSOR_STATUS_START;
             camera_start();
+            
 		}
 		else if (vio_status.cam_status != SENSOR_STATUS_WAIT && pbuf[0] == 0)
 		{
@@ -100,6 +108,29 @@ int camera_recv(uint8_t cmd, uint8_t *pbuf, uint16_t length)
 			mt9v034_exposure(vio_status.exposure);
 		}
 		break;
+    case REQUEST_CAMERA_SET_SYNC_STATUS:
+        if(pbuf[0] == 1)
+        {
+            HAL_TIM_Base_Start_IT(&htim6);
+            vio_status.is_sync_start = 1;
+        }else{
+            HAL_TIM_Base_Stop_IT(&htim6);
+            vio_status.is_sync_start = 0;
+        }
+        break;
+    case REQUEST_CAMERA_SET_FPS:
+        eeprom.camera_fps = pbuf[0];
+        vio_status.camera_fps = pbuf[0];
+        HAL_TIM_Base_Stop_IT(&htim6);
+        USER_MX_TIM6_Init(eeprom.camera_fps);
+        flash_eeprom_save();
+        break;        
+    case REQUEST_CAMERA_SET_SYNC_MODE:
+		eeprom.is_sync_mode = pbuf[0];
+        vio_status.is_sync_mode = pbuf[0];
+		flash_eeprom_save();
+        set_triggered_mode(vio_status.is_sync_mode);
+        break;
 	case REQUEST_CAMERA_SET_FRAME_SIZE_NUM:
 
 		vio_status.cam_status = SENSOR_STATUS_WAIT;
@@ -144,7 +175,10 @@ int camera_ctrl(uint8_t cmd, uint8_t *pbuf)
 		pbuf[6] = (uint8_t)(vio_status.exposure >> 16);
 		pbuf[7] = (uint8_t)(vio_status.exposure >> 8);
 		pbuf[8] = (uint8_t)(vio_status.exposure >> 0);
-		ret = 9;
+        pbuf[9] = vio_status.is_sync_mode;
+        pbuf[10] = vio_status.is_sync_start;
+        pbuf[11] = vio_status.camera_fps;
+		ret = 12;
 		break;
 	default:
 		ret = -1;

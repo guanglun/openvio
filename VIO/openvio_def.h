@@ -12,7 +12,7 @@
 
 enum SENSOR_USB{
 	SENSOR_USB_CAM = 0,
-	SENSOR_USB_IMU
+	SENSOR_USB_IMU = 1,
 };
 
 enum SENSOR_STATUS{
@@ -80,6 +80,9 @@ struct OPENVIO_STATUS{
     uint32_t cam_frame_size;
     uint8_t cam_name;
     int exposure;
+    uint8_t is_sync_mode;
+    uint8_t is_sync_start;
+    uint8_t camera_fps;
 };
 
 

@@ -46,7 +46,7 @@ void MX_TIM13_Init(void);
 void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
 
 /* USER CODE BEGIN Prototypes */
-
+void USER_MX_TIM6_Init(uint8_t hz);
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus

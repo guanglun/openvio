@@ -30,6 +30,8 @@ extern "C" {
 struct EEPROM_CONFIG_STRUCT{
   uint32_t reboot_to_bootloader;
   int32_t exposure;
+  uint8_t is_sync_mode;
+  uint8_t camera_fps;
 }__attribute__ ((aligned (4)));;
 
 
