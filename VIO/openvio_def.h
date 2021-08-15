@@ -83,6 +83,7 @@ struct OPENVIO_STATUS{
     uint8_t is_sync_mode;
     uint8_t is_sync_start;
     uint8_t camera_fps;
+    uint8_t infrared_pwm;
 };
 
 

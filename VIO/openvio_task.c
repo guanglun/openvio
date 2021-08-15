@@ -22,6 +22,7 @@
 #include "lcd_init.h"
 #include "config.h"
 
+extern TIM_HandleTypeDef htim2;
 extern TIM_HandleTypeDef htim6;
 extern USBD_HandleTypeDef hUsbDeviceHS;
 extern int frame_count;
@@ -45,7 +46,9 @@ struct OPENVIO_STATUS vio_status;
 #define REQUEST_CAMERA_SET_SYNC_STATUS 	    0xA4
 #define REQUEST_CAMERA_SET_SYNC_MODE 	    0xA5
 #define REQUEST_CAMERA_SET_FPS              0xA6
-
+#define REQUEST_CAMERA_SET_FPS              0xA6
+#define REQUEST_SET_INFRARED_PWM            0xA7
+                    
 #define REQUEST_IMU_START 0xB0
 #define REQUEST_IMU_STOP 0xB1
 
@@ -131,6 +134,16 @@ int camera_recv(uint8_t cmd, uint8_t *pbuf, uint16_t length)
 		flash_eeprom_save();
         set_triggered_mode(vio_status.is_sync_mode);
         break;
+    case REQUEST_SET_INFRARED_PWM:
+        if(pbuf[0] >= 0 && pbuf[0] <= 100)
+        {
+            eeprom.infrared_pwm = pbuf[0];
+            vio_status.infrared_pwm = pbuf[0];
+            flash_eeprom_save();            
+            __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, eeprom.infrared_pwm);
+        }
+        
+        break;
 	case REQUEST_CAMERA_SET_FRAME_SIZE_NUM:
 
 		vio_status.cam_status = SENSOR_STATUS_WAIT;
@@ -145,8 +158,8 @@ int camera_recv(uint8_t cmd, uint8_t *pbuf, uint16_t length)
 		{
 			mt9v034_config((framesize_t)size_num);
 		}
-
 		break;
+
 	default:
 		ret = -1;
 		break;
@@ -178,7 +191,8 @@ int camera_ctrl(uint8_t cmd, uint8_t *pbuf)
         pbuf[9] = vio_status.is_sync_mode;
         pbuf[10] = vio_status.is_sync_start;
         pbuf[11] = vio_status.camera_fps;
-		ret = 12;
+        pbuf[12] = vio_status.infrared_pwm;
+		ret = 13;
 		break;
 	default:
 		ret = -1;

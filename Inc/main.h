@@ -83,8 +83,8 @@ void get_time(uint32_t *t1_cnt,uint16_t *t2_cnt);
 #define LED_B_GPIO_Port GPIOE
 #define USB_SWITCH_Pin GPIO_PIN_15
 #define USB_SWITCH_GPIO_Port GPIOE
-#define TEST1_Pin GPIO_PIN_8
-#define TEST1_GPIO_Port GPIOD
+#define SYNC_CLOCK_Pin GPIO_PIN_8
+#define SYNC_CLOCK_GPIO_Port GPIOD
 #define CAMSYNC_Pin GPIO_PIN_9
 #define CAMSYNC_GPIO_Port GPIOD
 #define CAMSYNC_EXTI_IRQn EXTI9_5_IRQn
@@ -94,8 +94,8 @@ void get_time(uint32_t *t1_cnt,uint16_t *t2_cnt);
 #define IMU_SCL_GPIO_Port GPIOD
 #define DCMI_RST_Pin GPIO_PIN_10
 #define DCMI_RST_GPIO_Port GPIOA
-#define SYNC_CLOCK_Pin GPIO_PIN_13
-#define SYNC_CLOCK_GPIO_Port GPIOA
+#define TEST1_Pin GPIO_PIN_13
+#define TEST1_GPIO_Port GPIOA
 #define SD_CD_Pin GPIO_PIN_0
 #define SD_CD_GPIO_Port GPIOD
 #define IMU_SPI_CS_Pin GPIO_PIN_1

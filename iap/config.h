@@ -32,6 +32,7 @@ struct EEPROM_CONFIG_STRUCT{
   int32_t exposure;
   uint8_t is_sync_mode;
   uint8_t camera_fps;
+  uint8_t infrared_pwm;
 }__attribute__ ((aligned (4)));;
 
 

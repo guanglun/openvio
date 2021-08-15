@@ -17,6 +17,7 @@ extern struct EEPROM_CONFIG_STRUCT eeprom;
 
 extern DCMI_HandleTypeDef hdcmi;
 extern DMA_HandleTypeDef hdma_dcmi;
+extern TIM_HandleTypeDef htim2;
 
 DMA_BUFFER uint8_t dcmi_image_buffer[CAM_PACKAGE_MAX_SIZE * 2] = {0};
 
@@ -107,7 +108,7 @@ void camera_init(void)
         cambus_readb(cam_slv_addr, OV_CHIP_ID, &chip_id);
         break;
     case MT9V034_SLV_ADDR:
-        HAL_RCC_MCOConfig(RCC_MCO1, RCC_MCO1SOURCE_PLL1QCLK, RCC_MCODIV_5);
+        HAL_RCC_MCOConfig(RCC_MCO1, RCC_MCO1SOURCE_PLL1QCLK, RCC_MCODIV_6);
         cambus_readb(cam_slv_addr, ON_CHIP_ID, &chip_id);
         break;
     default:
@@ -140,12 +141,18 @@ void camera_init(void)
         mt9v034_init();
 
         //printf("eeprom.exposure %d\r\n",eeprom.exposure);
+
         vio_status.exposure = eeprom.exposure;
         mt9v034_exposure(eeprom.exposure);
+
         vio_status.is_sync_mode = eeprom.is_sync_mode;
         set_triggered_mode(vio_status.is_sync_mode);
+
         vio_status.camera_fps = eeprom.camera_fps;
         USER_MX_TIM6_Init(eeprom.camera_fps);
+
+        vio_status.infrared_pwm = eeprom.infrared_pwm;      
+        __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, eeprom.infrared_pwm);
         //HAL_Delay(10);
         //LCD_Fill(0,0,LCD_W,LCD_H,WHITE);
         //camera_timer_init(30);
@@ -190,10 +197,9 @@ uint8_t cam_head[6 + 6] = "CAMERA";
 static line_cnt = 0;
 void HAL_DCMI_FrameEventCallback(DCMI_HandleTypeDef *hdcmi)
 {
-    HAL_GPIO_TogglePin(GPIOD, TEST1_Pin);
+    HAL_GPIO_TogglePin(TEST1_GPIO_Port, TEST1_Pin);
     HAL_GPIO_WritePin(DCMI_FSYNC_GPIO_Port, DCMI_FSYNC_Pin, GPIO_PIN_RESET);
-    //HAL_GPIO_WritePin(GPIOD, TEST1_Pin, GPIO_PIN_SET);
-
+    
     if(vio_status.cam_status != SENSOR_STATUS_WAIT)
     {
         get_time(&t1, &t2);
@@ -210,8 +216,6 @@ void HAL_DCMI_FrameEventCallback(DCMI_HandleTypeDef *hdcmi)
 
         line_cnt = 0;
     }
-
-    //HAL_GPIO_WritePin(GPIOD, TEST1_Pin, GPIO_PIN_RESET);
 }
 
 

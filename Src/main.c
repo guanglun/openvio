@@ -120,7 +120,7 @@ int main(void)
   //HAL_TIM_Base_Start_IT(&htim6);
   HAL_TIM_Base_Start_IT(&htim13);
   HAL_TIM_PWM_Start(&htim2,TIM_CHANNEL_1);
-  __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 500);
+  __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 0);
   printf("[ openvio app ]\r\n");
 
   /* USER CODE END 2 */
