@@ -17,7 +17,7 @@ extern struct EEPROM_CONFIG_STRUCT eeprom;
 
 extern DCMI_HandleTypeDef hdcmi;
 extern DMA_HandleTypeDef hdma_dcmi;
-extern TIM_HandleTypeDef htim2;
+extern TIM_HandleTypeDef htim4;
 
 DMA_BUFFER uint8_t dcmi_image_buffer[CAM_PACKAGE_MAX_SIZE * 2] = {0};
 
@@ -152,7 +152,7 @@ void camera_init(void)
         USER_MX_TIM6_Init(eeprom.camera_fps);
 
         vio_status.infrared_pwm = eeprom.infrared_pwm;      
-        __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, eeprom.infrared_pwm);
+        __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_1, eeprom.infrared_pwm);
         //HAL_Delay(10);
         //LCD_Fill(0,0,LCD_W,LCD_H,WHITE);
         //camera_timer_init(30);

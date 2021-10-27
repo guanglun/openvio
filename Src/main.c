@@ -115,12 +115,13 @@ int main(void)
   MX_TIM6_Init();
   MX_TIM13_Init();
   MX_TIM2_Init();
+  MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
   USER_MX_TIM6_Init(40);
   //HAL_TIM_Base_Start_IT(&htim6);
   HAL_TIM_Base_Start_IT(&htim13);
-  HAL_TIM_PWM_Start(&htim2,TIM_CHANNEL_1);
-  __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 0);
+  HAL_TIM_PWM_Start(&htim4,TIM_CHANNEL_1);
+  __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_1, 0);
   printf("[ openvio app ]\r\n");
 
   /* USER CODE END 2 */

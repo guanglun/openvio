@@ -22,7 +22,7 @@
 #include "lcd_init.h"
 #include "config.h"
 
-extern TIM_HandleTypeDef htim2;
+extern TIM_HandleTypeDef htim4;
 extern TIM_HandleTypeDef htim6;
 extern USBD_HandleTypeDef hUsbDeviceHS;
 extern int frame_count;
@@ -140,7 +140,7 @@ int camera_recv(uint8_t cmd, uint8_t *pbuf, uint16_t length)
             eeprom.infrared_pwm = pbuf[0];
             vio_status.infrared_pwm = pbuf[0];
             flash_eeprom_save();            
-            __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, eeprom.infrared_pwm);
+            __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_1, eeprom.infrared_pwm);
         }
         
         break;
