@@ -153,6 +153,7 @@ void camera_init(void)
 
         vio_status.infrared_pwm = eeprom.infrared_pwm;      
         __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, eeprom.infrared_pwm);
+        __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, eeprom.infrared_pwm);
         //HAL_Delay(10);
         //LCD_Fill(0,0,LCD_W,LCD_H,WHITE);
         //camera_timer_init(30);

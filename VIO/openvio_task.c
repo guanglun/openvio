@@ -141,6 +141,7 @@ int camera_recv(uint8_t cmd, uint8_t *pbuf, uint16_t length)
             vio_status.infrared_pwm = pbuf[0];
             flash_eeprom_save();            
             __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, eeprom.infrared_pwm);
+			__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, eeprom.infrared_pwm);
         }
         
         break;
