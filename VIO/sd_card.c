@@ -24,12 +24,12 @@ void sdcard_init(void)
   fr = f_mount(&fs, "0:/", 1);
   if (fr == FR_OK)
   {
-    LCD_ShowString(0, 16 * 2, "[SD] [Mount Success]", RED, WHITE, 16, 0);
+    //LCD_ShowString(0, 16 * 2, "[SD] [Mount Success]", RED, WHITE, 16, 0);
     printf("SD card mount ok!\r\n");
   }
   else
   {
-    LCD_ShowString(0, 16 * 2, "[SD] [Mount Fail]", RED, WHITE, 16, 0);
+    //LCD_ShowString(0, 16 * 2, "[SD] [Mount Fail]", RED, WHITE, 16, 0);
     printf("[SD] [MOUNT ERROR %d]", fr);
     return;
   }

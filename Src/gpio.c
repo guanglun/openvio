@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; Copyright (c) 2021 STMicroelectronics.
+  * <h2><center>&copy; Copyright (c) 2022 STMicroelectronics.
   * All rights reserved.</center></h2>
   *
   * This software component is licensed by ST under Ultimate Liberty license
@@ -65,14 +65,14 @@ void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(USB_SWITCH_GPIO_Port, USB_SWITCH_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOD, SYNC_CLOCK_Pin|IMU_SDA_Pin|IMU_SCL_Pin|IMU_SPI_CS_Pin
-                          |TFT_SPI_CS_Pin|DCMI_PWDN_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, SYNC_CLOCK_Pin|DCMI_FSYNC_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOD, IMU_SDA_Pin|IMU_SCL_Pin|IMU_SPI_CS_Pin|TFT_SPI_CS_Pin
+                          |DCMI_PWDN_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOA, DCMI_RST_Pin|TEST1_Pin, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(DCMI_FSYNC_GPIO_Port, DCMI_FSYNC_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pins : PCPin PCPin */
   GPIO_InitStruct.Pin = LED_G_Pin|IMU_FSYNC_Pin;
@@ -127,12 +127,6 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(SYNC_CLOCK_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : PtPin */
-  GPIO_InitStruct.Pin = CAMSYNC_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
-  GPIO_InitStruct.Pull = GPIO_PULLUP;
-  HAL_GPIO_Init(CAMSYNC_GPIO_Port, &GPIO_InitStruct);
-
   /*Configure GPIO pins : PDPin PDPin PDPin PDPin
                            PDPin */
   GPIO_InitStruct.Pin = IMU_SDA_Pin|IMU_SCL_Pin|IMU_SPI_CS_Pin|TFT_SPI_CS_Pin
@@ -164,6 +158,12 @@ void MX_GPIO_Init(void)
   HAL_GPIO_Init(SD_CD_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : PtPin */
+  GPIO_InitStruct.Pin = CAMSYNC_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(CAMSYNC_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PtPin */
   GPIO_InitStruct.Pin = DCMI_FSYNC_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
@@ -171,11 +171,11 @@ void MX_GPIO_Init(void)
   HAL_GPIO_Init(DCMI_FSYNC_GPIO_Port, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
+  HAL_NVIC_SetPriority(EXTI3_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI3_IRQn);
+
   HAL_NVIC_SetPriority(EXTI4_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(EXTI4_IRQn);
-
-  HAL_NVIC_SetPriority(EXTI9_5_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
 
 }
 

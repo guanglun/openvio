@@ -9,8 +9,6 @@
 #include "main.h"
 #include "cmsis_os.h"
 #include "cambus.h"
-#include "lcd.h"
-#include "lcd_init.h"
 #include "config.h"
 
 extern struct EEPROM_CONFIG_STRUCT eeprom;
@@ -124,11 +122,9 @@ void camera_init(void)
         vio_status.gs_bpp = 2;
         vio_status.cam_frame_size_num = FRAMESIZE_VGA; //FRAMESIZE_QVGA;//FRAMESIZE_MLCD; //
         printf("[CAM CHIP][OV7725]\r\n");
-        LCD_ShowString(0, 16 * 3, "[CAM CHIP][OV7725]", RED, WHITE, 16, 0);
         ov7725_init();
         
         HAL_Delay(10);
-        LCD_Fill(0, 0, LCD_W, LCD_H, WHITE);
         camera_timer_init(20);
         break;
     case MT9V034_ID:
@@ -137,7 +133,6 @@ void camera_init(void)
         vio_status.gs_bpp = 1;
         vio_status.cam_frame_size_num = FRAMESIZE_WVGA2;
         printf("[CAM CHIP][MT9V034]\r\n");
-        LCD_ShowString(0, 16 * 3, "[CAM CHIP][MT9V034]", RED, WHITE, 16, 0);
         mt9v034_init();
 
         //printf("eeprom.exposure %d\r\n",eeprom.exposure);
@@ -155,12 +150,11 @@ void camera_init(void)
         __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, eeprom.infrared_pwm);
         __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, eeprom.infrared_pwm);
         //HAL_Delay(10);
-        //LCD_Fill(0,0,LCD_W,LCD_H,WHITE);
         //camera_timer_init(30);
         //camera_start();
         break;
     default:
-        LCD_ShowString(0, 16 * 3, "[CAM CHIP][Not Found]", RED, WHITE, 16, 0);
+
         break;
     }
 }

@@ -26,7 +26,6 @@
 #include "i2c.h"
 #include "mdma.h"
 #include "sdmmc.h"
-#include "spi.h"
 #include "tim.h"
 #include "usart.h"
 #include "usb_device.h"
@@ -109,7 +108,6 @@ int main(void)
   MX_DMA_Init();
   MX_SDMMC1_SD_Init();
   MX_FATFS_Init();
-  MX_SPI2_Init();
   MX_MDMA_Init();
   MX_USART2_UART_Init();
   MX_TIM6_Init();

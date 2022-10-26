@@ -30,7 +30,6 @@
 #include "dcmi.h"
 #include "sd_card.h"
 #include "openvio.h"
-#include "lcd.h"
 #include "usbd_cdc_if.h"
 
 uint16_t adc_value;
@@ -216,8 +215,8 @@ void StartDefaultTask(void const * argument)
 
         //HAL_GPIO_WritePin(GPIOD, TEST2_Pin, GPIO_PIN_RESET);
         
-        if (usb_frame_s.len > 20)
-          LCD_Show_Cam(usb_frame_s.addr, usb_frame_s.len);
+        //if (usb_frame_s.len > 20)
+        //  LCD_Show_Cam(usb_frame_s.addr, usb_frame_s.len);
       }
       else if (usb_frame_s.sensor == SENSOR_USB_IMU)
       {
